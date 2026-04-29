@@ -84,7 +84,7 @@ theorem subst_preserves_noloads (e e' : Expr) (x : String) :
 
 /-- Helper: if a closed expression evaluates to a closure and contains
     no loads, then the body of the closure also contains no loads.
-    (Proof requires induction on evaluation; omitted for brevity.) -/
+    (Proof requires induction on Eval with a generalized value index.) -/
 theorem eval_closure_noloads_body (f : Expr) (x : String) (τ : Ty) (body : Expr) :
     Eval f (Value.vclosure [] x τ body) → NoLoads f → NoLoads body := by
   sorry

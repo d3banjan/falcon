@@ -53,7 +53,7 @@ inductive TypedAny : TypeEnv → Expr → TyAny → Prop
     This breaks Theorem 1. -/
 theorem any_breaks_soundness :
     ∃ (Γ : TypeEnv) (e : Expr) (τ : Ty) (v : Value),
-    TypedAny Γ e (TyAny.base (Ty.concrete "Foo")) ∧
+    TypedAny Γ e (TyAny.base τ) ∧
     Eval e v ∧
     Vulnerable v := by
   exists []
