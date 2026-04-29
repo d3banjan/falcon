@@ -1,0 +1,22 @@
+name: Lean CI
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'lean/**'
+  pull_request:
+    branches: [master]
+    paths:
+      - 'lean/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: leanprover/lean-action@v1
+        with:
+          lake-targets: "TaintedTypingFramework"
+          working-directory: lean

@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  mypy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install uv
+      - run: uv sync --all-groups
+      - run: uv run mypy --version
+      - run: uv run mypy --strict tests/fixtures/
+
+  pyright:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install uv
+      - run: uv sync --all-groups
+      - run: uv run pyright --version
+      - run: uv run pyright --warnings tests/ --ignoreexternal
+      - run: uv run pytest tests/checker_matrix/ -v
+
+  pytest:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install uv
+      - run: uv sync --all-groups
+      - run: uv run pytest tests/ -v
+
+  ty-future:
+    runs-on: ubuntu-latest
+    if: false  # Enable when ty is stable
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+      - run: npm install -g @astral-sh/ty
+      - run: ty --version
+      - run: ty check tests/

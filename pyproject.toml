@@ -1,0 +1,66 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pickle-stubs-secure"
+version = "1.0.0a1"
+description = "Maximum-strict mypy stubs for pickle — every deserialization call is a type error"
+requires-python = ">=3.11"
+dependencies = [
+    "tomlkit>=0.11.0",
+    "tomli>=1.2.0; python_version < '3.11'",
+]
+
+[project.optional-dependencies]
+dev = [
+    "mypy>=1.13,<1.14",
+    "pyright",
+    "pytest>=7.0",
+    "ruff>=0.15.12",
+    "bandit>=1.9.4",
+    "semgrep>=0.112.1",
+]
+
+[project.scripts]
+pickle-secure = "pickle_stubs_secure.cli.main:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pickle_stubs_secure", "pickle-stubs", "stubs"]
+
+[tool.hatch.build]
+include = [
+    "src/pickle_stubs_secure/**",
+    "pickle-stubs/**",
+    "stubs/**",
+]
+
+# PEP 561: declare this is a stub-only package
+[tool.mypy]
+python_version = "3.11"
+strict = true
+# Override stdlib stubs — stdlib is always resolved from bundled typeshed,
+# but mypy_path takes precedence when set here.
+mypy_path = ["stubs"]
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: marks tests as slow (venv creation + pip install)",
+]
+
+[tool.pyright]
+stubPath = "stubs"
+typeCheckingMode = "strict"
+pythonVersion = "3.11"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.13,<1.14",
+    "pyright",
+    "pytest>=7.0",
+    "ruff>=0.15.12",
+]
+test = [
+    "bandit>=1.9.4",
+    "semgrep>=0.112.1",
+]
