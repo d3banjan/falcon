@@ -29,6 +29,13 @@ inductive NoCast : Expr → Prop
   | lam    : ∀ x τ body, NoCast body → NoCast (Expr.lam x τ body)
   | loads  : ∀ b, NoCast b → NoCast (Expr.loads b)
 
+/-- A term contains no `loads` sub-expressions and no tainted constants. -/
+inductive NoLoads : Expr → Prop
+  | const : ∀ v, ¬ isTainted v → NoLoads (Expr.const v)
+  | var   : ∀ x, NoLoads (Expr.var x)
+  | app   : ∀ f a, NoLoads f → NoLoads a → NoLoads (Expr.app f a)
+  | lam   : ∀ x τ body, NoLoads body → NoLoads (Expr.lam x τ body)
+
 /-- Predicate: `e` contains `loads b` as a subterm. -/
 inductive HasLoads : Expr → Expr → Prop
   | here    : ∀ b, HasLoads (Expr.loads b) (Expr.loads b)
@@ -47,16 +54,21 @@ inductive HasCastLoads : Expr → Prop
   | loads_b : ∀ e, HasCastLoads e → HasCastLoads (Expr.loads e)
   | cast_b  : ∀ τ e, HasCastLoads e → HasCastLoads (Expr.cast τ e)
 
-/-- If an expression is typed at a concrete type and contains no cast,
-    then it contains no `loads` subterm. -/
-theorem typed_concrete_no_loads (Γ : TypeEnv) (e : Expr) (τ : Ty) :
-    Typed Γ e τ → isConcrete τ → NoCast e → ∀ b, ¬ HasLoads e b := by
+/-- Substitution preserves `NoLoads`. -/
+theorem subst_preserves_noloads (e e' : Expr) (x : String) :
+    NoLoads e → NoLoads e' → NoLoads (e.subst x e') := by
   sorry
 
-/-- If an expression contains no `loads`, then its evaluation produces
-    a non-tainted value. -/
+/-- If an expression is typed at a concrete type and contains no cast,
+    then it contains no `loads` subterm and no tainted constants. -/
+theorem typed_concrete_no_loads (Γ : TypeEnv) (e : Expr) (τ : Ty) :
+    Typed Γ e τ → isConcrete τ → NoCast e → NoLoads e := by
+  sorry
+
+/-- If an expression contains no `loads` and no tainted constants, then
+    its evaluation produces a non-tainted value. -/
 theorem eval_not_tainted_without_loads (e : Expr) (v : Value) :
-    Eval e v → (∀ b, ¬ HasLoads e b) → ¬ isTainted v := by
+    Eval e v → NoLoads e → ¬ isTainted v := by
   sorry
 
 /-- **Theorem 1** — Pickle soundness for the sound fragment.
@@ -70,8 +82,8 @@ theorem soundness :
     Eval e v →
     ¬ Vulnerable v := by
   intros Γ e τ v htyped hconc hnc heval
-  have hno : ∀ b, ¬ HasLoads e b := typed_concrete_no_loads Γ e τ htyped hconc hnc
-  have hnt : ¬ isTainted v := eval_not_tainted_without_loads e v heval hno
+  have hnl : NoLoads e := typed_concrete_no_loads Γ e τ htyped hconc hnc
+  have hnt : ¬ isTainted v := eval_not_tainted_without_loads e v heval hnl
   intro hv
   exact hnt hv
 
