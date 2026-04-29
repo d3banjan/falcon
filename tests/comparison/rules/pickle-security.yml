@@ -1,0 +1,100 @@
+rules:
+  - id: pickle-loads-call
+    patterns:
+      - pattern: pickle.loads(...)
+    message: Direct pickle.loads() call detected - arbitrary code execution risk
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      technology: [pickle]
+
+  - id: pickle-load-call
+    patterns:
+      - pattern: pickle.load(...)
+    message: Direct pickle.load() call detected - arbitrary code execution risk
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      technology: [pickle]
+
+  - id: unpickler-load-call
+    patterns:
+      - pattern: Unpickler(...).load(...)
+    message: Pickle.Unpickler.load() call detected - arbitrary code execution risk
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      technology: [pickle]
+
+  - id: shelve-subscript-access
+    patterns:
+      - pattern: $SHELF[$KEY]
+    message: Shelve subscript access detected - arbitrary code execution risk
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      technology: [shelve]
+
+  - id: shelve-get-call
+    patterns:
+      - pattern: $SHELF.get(...)
+    message: Shelve.get() call detected with potential unsafe data
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: security
+      technology: [shelve]
+
+  - id: shelve-values-call
+    patterns:
+      - pattern: $SHELF.values()
+    message: Shelve.values() call detected - iterates over unsafe data
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: security
+      technology: [shelve]
+
+  - id: shelve-items-call
+    patterns:
+      - pattern: $SHELF.items()
+    message: Shelve.items() call detected - returns unsafe key-value pairs
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: security
+      technology: [shelve]
+
+  - id: shelve-keys-call
+    patterns:
+      - pattern: $SHELF.keys()
+    message: Shelve.keys() call detected - may interact with unsafe data
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: security
+      technology: [shelve]
+
+  - id: getattr-pickle-pattern
+    patterns:
+      - pattern: getattr(pickle, ...)
+    message: Dynamic getattr access to pickle - bypasses static analysis
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: security
+      technology: [pickle]
+
+  - id: cast-pickle-result
+    patterns:
+      - pattern: cast(..., pickle.loads(...))
+    message: Cast operation on pickle.loads result - potential bypass of safety checks
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: security
+      technology: [pickle]
