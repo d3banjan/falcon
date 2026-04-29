@@ -21,6 +21,7 @@ inductive Ty : Type
   | int    : Ty
   | concrete (name : String) : Ty
   | unsafe_  (τ : Ty) : Ty
+  | arrow (dom : Ty) (cod : Ty) : Ty
 
 inductive Value : Type
   | vunit  : Value

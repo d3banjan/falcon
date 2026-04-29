@@ -22,9 +22,9 @@ inductive Typed : TypeEnv → Expr → Ty → Prop
       Typed Γ (Expr.var x) τ
   | T_lam          : ∀ Γ x τ τ' body,
       Typed ((x, τ) :: Γ) body τ' →
-      Typed Γ (Expr.lam x τ body) (Ty.concrete "Fun")
+      Typed Γ (Expr.lam x τ body) (Ty.arrow τ τ')
   | T_app          : ∀ Γ f arg τ τ',
-      Typed Γ f (Ty.concrete "Fun") →
+      Typed Γ f (Ty.arrow τ τ') →
       Typed Γ arg τ →
       Typed Γ (Expr.app f arg) τ'
   | T_loads        : ∀ Γ b,
