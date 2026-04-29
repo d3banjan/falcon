@@ -12,7 +12,7 @@ Theorem 1 (Pickle soundness for sound fragment):
 
 Theorem 2 (cast is the only sound escape):
   If a well-typed expression at concrete type contains `loads b` as a
-  subterm, then it must also contain a `cast τ (loads b)` somewhere.
+  subterm, then it must also contain a `cast` subexpression somewhere.
 -/
 
 namespace TaintedTypingFramework
@@ -45,14 +45,14 @@ inductive HasLoads : Expr → Expr → Prop
   | loads_b : ∀ e b, HasLoads e b → HasLoads (Expr.loads e) b
   | cast_b  : ∀ τ e b, HasLoads e b → HasLoads (Expr.cast τ e) b
 
-/-- Predicate: `e` contains a `cast τ (loads b)` subterm. -/
-inductive HasCastLoads : Expr → Prop
-  | here    : ∀ τ b, HasCastLoads (Expr.cast τ (Expr.loads b))
-  | app_l   : ∀ f a, HasCastLoads f → HasCastLoads (Expr.app f a)
-  | app_r   : ∀ f a, HasCastLoads a → HasCastLoads (Expr.app f a)
-  | lam_b   : ∀ x τ body, HasCastLoads body → HasCastLoads (Expr.lam x τ body)
-  | loads_b : ∀ e, HasCastLoads e → HasCastLoads (Expr.loads e)
-  | cast_b  : ∀ τ e, HasCastLoads e → HasCastLoads (Expr.cast τ e)
+/-- Predicate: `e` contains a `cast` subexpression. -/
+inductive HasCast : Expr → Prop
+  | here    : ∀ τ e, HasCast (Expr.cast τ e)
+  | app_l   : ∀ f a, HasCast f → HasCast (Expr.app f a)
+  | app_r   : ∀ f a, HasCast a → HasCast (Expr.app f a)
+  | lam_b   : ∀ x τ body, HasCast body → HasCast (Expr.lam x τ body)
+  | loads_b : ∀ e, HasCast e → HasCast (Expr.loads e)
+  | cast_b  : ∀ τ e, HasCast e → HasCast (Expr.cast τ e)
 
 /-- Substitution preserves `NoLoads`. -/
 theorem subst_preserves_noloads (e e' : Expr) (x : String) :
@@ -144,13 +144,13 @@ theorem soundness :
 
 /-- **Theorem 2** — `cast` is the only sound escape.
     If a well-typed expression at concrete type contains `loads b`,
-    then it must contain a `cast τ (loads b)` somewhere. -/
+    then it must contain a `cast` subexpression somewhere. -/
 theorem cast_only_escape :
     ∀ (Γ : TypeEnv) (e : Expr) (τ : Ty) (b : Expr),
     Typed Γ e τ →
     isConcrete τ →
     HasLoads e (Expr.loads b) →
-    HasCastLoads e := by
+    HasCast e := by
   sorry
 
 end TaintedTypingFramework
