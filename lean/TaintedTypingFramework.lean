@@ -1,0 +1,9 @@
+-- This module serves as the root of the `TaintedTypingFramework` library.
+import TaintedTypingFramework.Syntax
+import TaintedTypingFramework.Semantics
+import TaintedTypingFramework.Types
+import TaintedTypingFramework.Stubs
+import TaintedTypingFramework.Vulnerable
+import TaintedTypingFramework.Soundness
+import TaintedTypingFramework.Leaks
+import TaintedTypingFramework.Bridging

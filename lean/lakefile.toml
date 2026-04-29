@@ -1,0 +1,10 @@
+name = "TaintedTypingFramework"
+version = "0.1.0"
+defaultTargets = ["taintedtypingframework"]
+
+[[lean_lib]]
+name = "TaintedTypingFramework"
+
+[[lean_exe]]
+name = "taintedtypingframework"
+root = "Main"
