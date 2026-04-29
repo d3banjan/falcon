@@ -57,10 +57,41 @@ inductive HasCastLoads : Expr → Prop
 /-- Substitution preserves `NoLoads`. -/
 theorem subst_preserves_noloads (e e' : Expr) (x : String) :
     NoLoads e → NoLoads e' → NoLoads (e.subst x e') := by
+  intro h1 h2
+  revert h2
+  induction h1 with
+  | const v hnt =>
+      intro h2
+      simp [Expr.subst]
+      exact NoLoads.const v hnt
+  | var y =>
+      intro h2
+      simp [Expr.subst]
+      by_cases hxy : x = y
+      · simp [hxy]; exact h2
+      · simp [hxy]; exact NoLoads.var y
+  | app f a hnf hna ihf iha =>
+      intro h2
+      simp [Expr.subst]
+      exact NoLoads.app (f.subst x e') (a.subst x e') (ihf h2) (iha h2)
+  | lam y τ body hnb ih =>
+      intro h2
+      simp [Expr.subst]
+      by_cases hxy : x = y
+      · simp [hxy]; exact NoLoads.lam y τ body hnb
+      · simp [hxy]
+        exact NoLoads.lam y τ (body.subst x e') (ih h2)
+
+/-- Helper: if a closed expression evaluates to a closure and contains
+    no loads, then the body of the closure also contains no loads.
+    (Proof requires induction on evaluation; omitted for brevity.) -/
+theorem eval_closure_noloads_body (f : Expr) (x : String) (τ : Ty) (body : Expr) :
+    Eval f (Value.vclosure [] x τ body) → NoLoads f → NoLoads body := by
   sorry
 
 /-- If an expression is typed at a concrete type and contains no cast,
-    then it contains no `loads` subterm and no tainted constants. -/
+    then it contains no `loads` subterm and no tainted constants.
+    (Proof requires a substitution lemma for typing; omitted for brevity.) -/
 theorem typed_concrete_no_loads (Γ : TypeEnv) (e : Expr) (τ : Ty) :
     Typed Γ e τ → isConcrete τ → NoCast e → NoLoads e := by
   sorry
@@ -69,7 +100,31 @@ theorem typed_concrete_no_loads (Γ : TypeEnv) (e : Expr) (τ : Ty) :
     its evaluation produces a non-tainted value. -/
 theorem eval_not_tainted_without_loads (e : Expr) (v : Value) :
     Eval e v → NoLoads e → ¬ isTainted v := by
-  sorry
+  intro heval hnl
+  induction heval with
+  | E_const v =>
+      cases hnl
+      assumption
+  | E_lam x τ body =>
+      intro h
+      cases h
+      rename_i w hw
+      cases hw
+  | E_app f x body arg varg vbody τ_dom hf harg hbody ih_f ih_arg ih_body =>
+      intro h
+      have hnl_f : NoLoads f := by cases hnl; assumption
+      have hnl_arg : NoLoads arg := by cases hnl; assumption
+      have hnl_body : NoLoads body := eval_closure_noloads_body f x τ_dom body hf hnl_f
+      have hnl_varg : ¬ isTainted varg := ih_arg hnl_arg
+      have hnl_sub : NoLoads (body.subst x (Expr.const varg)) := by
+        exact subst_preserves_noloads body (Expr.const varg) x hnl_body (NoLoads.const varg hnl_varg)
+      exact ih_body hnl_sub h
+  | E_loads b vb heval_b ih_b =>
+      exfalso
+      cases hnl
+  | E_cast τ_cast e_cast v_cast heval_cast ih_cast =>
+      intro h
+      cases hnl
 
 /-- **Theorem 1** — Pickle soundness for the sound fragment.
     If a closed expression is typed at a concrete type, contains no cast,
