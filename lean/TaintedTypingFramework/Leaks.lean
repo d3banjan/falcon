@@ -70,24 +70,33 @@ end AnyAbsorption
 
 section GetattrLeak
 
-/-- Extend `Expr` with `getattr`. -/
+/-- Extend `Expr` with `getattr` and application. -/
 inductive ExprGetattr : Type
   | base    : Expr → ExprGetattr
   | getattr : ExprGetattr → String → ExprGetattr
+  | app     : ExprGetattr → ExprGetattr → ExprGetattr
 
-/-- Extended evaluation: `getattr (const pickle) "loads"` evaluates to
-    the `loads` primitive. -/
+/-- Extended evaluation for `ExprGetattr`. -/
 inductive EvalGetattr : ExprGetattr → Value → Prop
   | E_base    : ∀ e v, Eval e v → EvalGetattr (ExprGetattr.base e) v
   | E_getattr : ∀ e v, EvalGetattr e (Value.vconcrete "module" v) →
       EvalGetattr (ExprGetattr.getattr e "loads") (Value.vclosure [] "b" Ty.bytes (Expr.loads (Expr.var "b")))
+  | E_app     : ∀ f arg x τ body varg vbody,
+      EvalGetattr f (Value.vclosure [] x τ body) →
+      EvalGetattr arg varg →
+      Eval (Expr.subst body x (Expr.const varg)) vbody →
+      EvalGetattr (ExprGetattr.app f arg) vbody
 
-/-- Extended typing: `getattr` is typed as `any`, so it bypasses the
-    `Unsafe` marker on `loads`. -/
+/-- Extended typing for `ExprGetattr`. -/
 inductive TypedGetattr : TypeEnv → ExprGetattr → Ty → Prop
   | T_base    : ∀ Γ e τ, Typed Γ e τ → TypedGetattr Γ (ExprGetattr.base e) τ
+  | T_any     : ∀ Γ v, TypedGetattr Γ (ExprGetattr.base (Expr.const v)) (Ty.concrete "Any")
   | T_getattr : ∀ Γ e, TypedGetattr Γ e (Ty.concrete "Any") →
       TypedGetattr Γ (ExprGetattr.getattr e "loads") (Ty.arrow Ty.bytes (Ty.concrete "Any"))
+  | T_app     : ∀ Γ f arg τ τ',
+      TypedGetattr Γ f (Ty.arrow τ τ') →
+      TypedGetattr Γ arg τ →
+      TypedGetattr Γ (ExprGetattr.app f arg) τ'
 
 /-- Counter-example: `getattr pickle "loads"` evaluates to the `loads`
     function but is typed as `bytes → Any` (not `bytes → Unsafe[Any]`).
@@ -100,7 +109,30 @@ theorem getattr_breaks_soundness :
     isConcrete τ ∧
     EvalGetattr e v ∧
     Vulnerable v := by
-  sorry
+  let e_getattr := ExprGetattr.getattr (ExprGetattr.base (Expr.const (Value.vconcrete "module" Value.vunit))) "loads"
+  let e_app := ExprGetattr.app e_getattr (ExprGetattr.base (Expr.const (Value.vbytes "x")))
+  exists e_app
+  exists Ty.concrete "Any"
+  exists Value.tainted (Value.vbytes "x")
+  apply And.intro
+  · apply TypedGetattr.T_app []
+    · apply TypedGetattr.T_getattr []
+      apply TypedGetattr.T_any []
+    · apply TypedGetattr.T_base []
+      apply Typed.T_const_bytes
+  apply And.intro
+  · intro σ hσ
+    cases hσ
+  apply And.intro
+  · apply EvalGetattr.E_app
+    · apply EvalGetattr.E_getattr
+      apply EvalGetattr.E_base
+      apply Eval.E_const
+    · apply EvalGetattr.E_base
+      apply Eval.E_const
+    · apply Eval.E_loads
+      apply Eval.E_const
+  · exact ⟨Value.vbytes "x", rfl⟩
 
 end GetattrLeak
 
@@ -140,28 +172,60 @@ end MonkeyPatch
 
 section KwargsAny
 
-/-- Extend `Expr` with untyped `**kwargs` forwarding.
+/-- Extend `Expr` with untyped `**kwargs` forwarding and application.
     `kwarg x` reads key `x` from the kwargs dict (typed `Any`). -/
 inductive ExprKwarg : Type
   | base  : Expr → ExprKwarg
   | kwarg : ExprKwarg → String → ExprKwarg
+  | app   : ExprKwarg → ExprKwarg → ExprKwarg
+
+/-- Extended evaluation: `kwarg` on a dict containing tainted data returns
+    the tainted payload. -/
+inductive EvalKwarg : ExprKwarg → Value → Prop
+  | E_base  : ∀ e v, Eval e v → EvalKwarg (ExprKwarg.base e) v
+  | E_kwarg : ∀ e v, EvalKwarg e (Value.vconcrete "dict" (Value.tainted v)) →
+      EvalKwarg (ExprKwarg.kwarg e "x") (Value.tainted v)
+  | E_app   : ∀ f arg x τ body varg vbody,
+      EvalKwarg f (Value.vclosure [] x τ body) →
+      EvalKwarg arg varg →
+      Eval (Expr.subst body x (Expr.const varg)) vbody →
+      EvalKwarg (ExprKwarg.app f arg) vbody
 
 /-- Extended typing: kwargs are untyped (`Any`). -/
 inductive TypedKwarg : TypeEnv → ExprKwarg → Ty → Prop
   | T_base  : ∀ Γ e τ, Typed Γ e τ → TypedKwarg Γ (ExprKwarg.base e) τ
+  | T_any   : ∀ Γ v, TypedKwarg Γ (ExprKwarg.base (Expr.const v)) (Ty.concrete "Any")
+  | T_dict  : ∀ Γ v, TypedKwarg Γ (ExprKwarg.base (Expr.const (Value.vconcrete "dict" v))) (Ty.concrete "Dict")
   | T_kwarg : ∀ Γ e x, TypedKwarg Γ e (Ty.concrete "Dict") →
       TypedKwarg Γ (ExprKwarg.kwarg e x) (Ty.concrete "Any")
+  | T_app   : ∀ Γ f arg τ τ',
+      TypedKwarg Γ f (Ty.arrow τ τ') →
+      TypedKwarg Γ arg τ →
+      TypedKwarg Γ (ExprKwarg.app f arg) τ'
 
-/-- Counter-example: kwargs forwarding loses taint tracking.
-    A function that receives tainted bytes via `**kwargs` and returns them
-    is typed at `Any`, but in a system with `any` absorption this becomes
-    usable at concrete type without cast. -/
+/-- Counter-example: `kwarg` on a dict containing tainted bytes returns
+    the tainted bytes but is typed as `Any` (concrete). -/
 theorem kwargs_any_breaks_soundness :
     ∃ (Γ : TypeEnv) (e : ExprKwarg) (τ : Ty) (v : Value),
     TypedKwarg Γ e τ ∧
     isConcrete τ ∧
+    EvalKwarg e v ∧
     Vulnerable v := by
-  sorry
+  exists []
+  exists ExprKwarg.kwarg (ExprKwarg.base (Expr.const (Value.vconcrete "dict" (Value.tainted (Value.vbytes "x"))))) "x"
+  exists Ty.concrete "Any"
+  exists Value.tainted (Value.vbytes "x")
+  apply And.intro
+  · apply TypedKwarg.T_kwarg []
+    apply TypedKwarg.T_dict []
+  apply And.intro
+  · intro σ hσ
+    cases hσ
+  apply And.intro
+  · apply EvalKwarg.E_kwarg
+    apply EvalKwarg.E_base
+    apply Eval.E_const
+  · exact ⟨Value.vbytes "x", rfl⟩
 
 end KwargsAny
 
