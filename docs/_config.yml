@@ -5,4 +5,5 @@ header_pages:
   - formal-method.md
   - cves-cwes.md
   - coverage-analysis.md
+  - cve-triage.md
   - mvp-results.md

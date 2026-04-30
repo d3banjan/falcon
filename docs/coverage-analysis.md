@@ -76,6 +76,8 @@ The 18 / 26 number includes direct source catches: if the vulnerable project sou
 | CVE-2026-22606 | Fickling | analyzer classification | Out of scope. |
 | CVE-2026-22607 | Fickling | analyzer classification | Out of scope. |
 
+See [CVE Triage](cve-triage.md) for code locations, mypy/pyright validation status, and the immediate fixture backlog.
+
 ## What Would Increase Coverage Next
 
 The next high-leverage scope is not packaging. It is stub coverage for alternate pickle-family libraries:
