@@ -5,12 +5,44 @@ build-backend = "hatchling.build"
 [project]
 name = "pickle-stubs-secure"
 version = "1.0.0a1"
-description = "Maximum-strict mypy stubs for pickle — every deserialization call is a type error"
+description = "Type-stub security gates for pickle-backed deserialization APIs"
+readme = "README.md"
 requires-python = ">=3.11"
+license = "MIT"
+keywords = [
+    "pickle",
+    "deserialization",
+    "cwe-502",
+    "cve",
+    "mypy",
+    "pyright",
+    "type-checking",
+    "security",
+    "formal-methods",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security",
+    "Topic :: Software Development :: Quality Assurance",
+    "Typing :: Stubs Only",
+]
 dependencies = [
     "tomlkit>=0.11.0",
     "tomli>=1.2.0; python_version < '3.11'",
 ]
+
+[project.urls]
+Homepage = "https://d3banjan.github.io/falcon/"
+Repository = "https://github.com/d3banjan/falcon"
+Issues = "https://github.com/d3banjan/falcon/issues"
+Documentation = "https://d3banjan.github.io/falcon/"
 
 [project.optional-dependencies]
 dev = [
