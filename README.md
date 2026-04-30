@@ -1,19 +1,60 @@
-# pickle-stubs-secure
+# Falcon / pickle-stubs-secure
 
 [![CI](https://github.com/d3banjan/falcon/actions/workflows/ci.yml/badge.svg)](https://github.com/d3banjan/falcon/actions/workflows/ci.yml)
+[![Pages](https://github.com/d3banjan/falcon/actions/workflows/pages.yml/badge.svg)](https://github.com/d3banjan/falcon/actions/workflows/pages.yml)
 
-Maximum-strict type-stub hardening for **deserialization** (pickle-family surfaces), with an auditable escape hatch via `typing.cast`.
+Falcon turns pickle-backed deserialization risk into a type-checking gate.
 
-## 30-second pitch
+The project ships Python stubs that mark dangerous deserialization APIs as `Unsafe[Any]`. Under strict `mypy` or `pyright`, application code cannot silently treat those values as trusted data. Intentional trust must be written as `cast(...)` and can be enumerated by `pickle-secure audit`.
 
-`pickle-stubs-secure` makes dangerous deserialization calls type errors in `mypy`/`pyright`.  
-If you intentionally trust data, you must add `cast(...)` and annotate that trust with `# trust:` for audit.
+Microsite: <https://d3banjan.github.io/falcon/>
 
-Supported scopes:
+## Why
 
-- `pickle` / `_pickle`
-- `shelve`
-- `numpy.load` (unsafe when `allow_pickle=True`)
+Many CVEs are not fixed everywhere at once. Applications pin old versions, vendors disagree about threat models, and "trusted input only" often becomes a deployment assumption rather than an enforceable boundary.
+
+Falcon does not patch upstream packages. It blocks unaudited vulnerable use in downstream application code before deployment.
+
+## Minimal Example
+
+```python
+from typing import Any, cast
+import pickle
+import numpy as np
+
+def unsafe_session(raw: bytes) -> dict[str, Any]:
+    return pickle.loads(raw)  # type error: Unsafe[Any]
+
+def unsafe_model(path: str) -> dict[str, Any]:
+    return np.load(path, allow_pickle=True)  # type error: Unsafe[Any]
+
+def reviewed(raw: bytes) -> dict[str, Any]:
+    return cast(dict[str, Any], pickle.loads(raw))  # trust: migration reviewed inbound artifact
+```
+
+The first two flows fail under the strict profile. The reviewed flow type-checks, but `pickle-secure audit` reports the trust boundary.
+
+## Current Scope
+
+Core stdlib surfaces:
+
+- `pickle.load`, `pickle.loads`, `pickle.Unpickler.load`
+- `_pickle.load`, `_pickle.loads`, `_pickle.Unpickler.load`
+- `shelve` read paths: `__getitem__`, `get`, `values`, `items`
+
+CVE-backed downstream pilot surfaces:
+
+- `numpy.load(..., allow_pickle=True)`
+- LangChain / langchain-community FAISS deserialization
+- Kedro `ShelveStore` reads
+- LlamaIndex `JsonPickleSerializer`
+- pyfory pickle fallback APIs
+- python-socketio queue manager handlers
+- Pipecat LiveKit frame deserializer
+- torch_musa compare utilities
+- PyTorch `torch.load`
+
+See [cve_db/reports/downstream-stubs-2026-04-30.md](cve_db/reports/downstream-stubs-2026-04-30.md) for the current CVE verdicts.
 
 ## Install
 
@@ -21,114 +62,55 @@ Supported scopes:
 pip install pickle-stubs-secure
 ```
 
-## One-shot launch mode (strict profile)
+For local development from this repo:
 
 ```bash
-cd /path/to/project
+uv sync --all-groups
+uv run pytest tests/ -q
+```
+
+## Strict Profile
+
+```bash
 pickle-secure init --profile=strict --write-precommit
+mypy --strict .
+pyright .
 pickle-secure audit .
 ```
 
-Then run your normal checker:
+`pickle-secure init` configures checker stub paths and audit policy. The strict profile also tightens common escape routes such as unchecked `Any`, blank ignores, and dynamic access patterns.
 
-```bash
-mypy --strict .
-pyright .
-```
+## Repository Layout
 
-## Scope shipped
+- `src/pickle_stubs_secure/` - runtime package and CLI.
+- `stubs/` - canonical checker overlay used by `mypy_path` / `stubPath`.
+- `pickle-stubs/` - packaged stub copy shipped in the wheel.
+- `cve_db/` - machine-readable CVE evidence and coverage reports.
+- `docs/` - GitHub Pages microsite source.
+- `lean/` - separate formal model work.
+- `tests/` - runtime, checker, CLI, CVE, and feature tests.
 
-### `pickle` / `_pickle`
-- `pickle.load`, `pickle.loads`, `pickle.Unpickler.load`
-- `_pickle.load`, `_pickle.loads`, `_pickle.Unpickler.load`
+The duplicate-looking `stubs/` and `pickle-stubs/` trees are intentional for now: one is the canonical local overlay, the other is the packaged distribution copy.
 
-All return `Unsafe[Any]` in our stubs.  
-Safe-serialization APIs (`dump`, `dumps`, `Pickler`) are unchanged.
+## Formal Method Boundary
 
-### `shelve`
-- `Shelf.__getitem__()`
-- `Shelf.get()`
-- `Shelf.values()`
-- `Shelf.items()`
+Falcon uses `Unsafe[T]` as a type-level taint marker. The Lean model explains the methodology: unsafe sources should not reach trusted typed sinks without an explicit escape. In real projects, the executable proof artifact is the CI type-checker run.
 
-These read paths are treated as `Unsafe[Any]` variants.
+This is not a proof that Python, mypy, pyright, or every dependency is sound. It is a practical gate for vulnerability branches that can be expressed as typed source-to-sink flows.
 
-### `numpy`
-- `numpy.load(..., allow_pickle=True)` is modeled as `Unsafe[Any]`
-- `numpy.load(..., allow_pickle=False | omitted)` remains `Any` to respect NumPy’s safe default
+## What Is Out of Scope
 
-This is the first external-scope extension.
+- Proving load-time RCE cannot occur. That needs future `TrustedBytes` / `TrustedPath` types.
+- Authorization, SSRF, path traversal, crypto, race conditions, and business logic CVEs.
+- Full type modeling of every downstream package.
+- Replacing Bandit, Semgrep, Ruff, SAST, or dependency scanning.
 
-## Example: strict errors + explicit audit trail
+## Links
 
-```python
-from typing import cast
-import pickle
-import numpy as np
-
-data1 = pickle.loads(payload)                      # type error
-data2 = cast(dict, pickle.loads(payload))           # allowed only with audited trust comment
-data3 = cast(dict, pickle.loads(payload))  # trust: migration-reason
-
-arr = np.load("model.bin", allow_pickle=True)       # type error
-arr = cast(dict, np.load("model.bin", allow_pickle=True))  # trust: cta-review reason
-```
-
-## Escape hatch policy
-
-Tag casts with:
-
-```python
-# trust: TAG [reason]
-```
-
-Example:
-
-```bash
-pickle-secure audit src/ --by-tag
-```
-
-Config lives in:
-
-```toml
-[tool.pickle_secure]
-allow_tags = ["general", "test-fixture", "migration"]
-deny_tags = ["legacy-migration"]
-require_reason = ["legacy-migration", "migration"]
-unknown_tag = "error"
-```
-
-## Launch readiness (done/required)
-
-Done:
-
-- Strict profile configuration (`mypy`, `pyright`, `ruff`, pre-commit template)
-- `pickle`, `_pickle`, `shelve`, and `numpy.load` scope now represented
-- CI coverage for checker matrix + runtime fixture suite
-- Audit CLI + tag policy enforcement
-- Comparison report and CVE workflow present
-
-To publish:
-
-- Reserve/publish package tag `v0.1.0` from current build
-- Run `python -m build` + `twine check dist/*`
-- Run `twine upload dist/*` from clean release environment
-
-## Feature spotlight
-
-- Allowlist-bypass demo remains in `tests/feature/test_allowlist_bypass_demo.py`
-- Shows static stubs catch runtime allowlist blindspots (`RestrictedUnpickler` patterns)
-
-## CVE evidence workflow
-
-See `docs/cve-database.md` and `cve_db/libraries/`.  
-Records capture catchability, CWE linkage, and validation state across tools.
-
-## Related docs
-
-- [docs/cve-database.md](docs/cve-database.md)
-- [docs/launch-quiz.md](docs/launch-quiz.md)
-- [pickle-stubs-secure-plan/PLAN.md](pickle-stubs-secure-plan/PLAN.md)
+- Docs: <https://d3banjan.github.io/falcon/>
+- CVE workflow: [docs/cve-database.md](docs/cve-database.md)
+- Launch quiz: [docs/launch-quiz.md](docs/launch-quiz.md)
+- Architecture: [docs/architecture.md](docs/architecture.md)
 
 ## License
 
