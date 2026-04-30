@@ -4,7 +4,7 @@
 import json
 import re
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, Tuple
 
 
 def count_vulnerable_patterns(test_file: str) -> int:
@@ -185,23 +185,23 @@ def generate_report(results_dir: str, test_file: str) -> str:
         "pickle-stubs-secure (mypy):",
         f"  - Type-based detection with {mypy_metrics['recall']:.1f}% recall",
         f"  - Minimal false positives ({mypy_metrics['false_positive_rate']:.1f}%)",
-        f"  - Integrates with existing type checking workflow",
-        f"  - Zero production overhead",
+        "  - Integrates with existing type checking workflow",
+        "  - Zero production overhead",
         "",
         "Bandit:",
         f"  - Pattern-based detection with {bandit_metrics['recall']:.1f}% recall",
         f"  - Higher false positive rate ({bandit_metrics['false_positive_rate']:.1f}%)",
-        f"  - AST-based analysis misses dynamic patterns",
+        "  - AST-based analysis misses dynamic patterns",
         "",
         "Semgrep:",
         f"  - Rule-based detection with {semgrep_metrics['recall']:.1f}% recall",
         f"  - Moderate false positives ({semgrep_metrics['false_positive_rate']:.1f}%)",
-        f"  - Requires rule maintenance and customization",
+        "  - Requires rule maintenance and customization",
         "",
         "Ruff:",
         f"  - Linter-based detection with {ruff_metrics['recall']:.1f}% recall",
         f"  - Low false positive rate ({ruff_metrics['false_positive_rate']:.1f}%)",
-        f"  - Very fast but limited security rule set",
+        "  - Very fast but limited security rule set",
         "",
         "CONCLUSION",
         "=" * 80,

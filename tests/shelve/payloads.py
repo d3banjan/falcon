@@ -1,6 +1,5 @@
 """RCE payloads for shelve tests."""
 import pickle
-from types import SimpleNamespace
 
 
 def rce_via_reduce_shelve(marker_path: str) -> bytes:
