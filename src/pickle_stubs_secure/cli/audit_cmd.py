@@ -22,6 +22,27 @@ UNSAFE_PICKLE_FUNCS = {
     ("_pickle", "Unpickler"),
 }
 
+UNSAFE_NUMPY_FUNCS = {
+    ("numpy", "load"),
+}
+
+UNSAFE_DOWNSTREAM_FUNCS = {
+    ("pyfory", "loads"),
+    ("pyfory", "deserialize"),
+    ("torch", "load"),
+    ("stepfun_ai", "call_remote_server"),
+}
+
+UNSAFE_DOWNSTREAM_METHODS = {
+    "deserialize_from_bytes",
+    "load_local",
+    "deserialize_async",
+    "compare_for_single_op",
+    "nan_inf_track_for_single_op",
+    "_handle_emit",
+    "_handle_callback",
+}
+
 # Target shelve modules for unsafe read operations
 UNSAFE_SHELF_MODULES = {
     "shelve",
@@ -59,7 +80,9 @@ class CastEscapeVisitor(ast.NodeVisitor):
             second_arg = node.args[1]
             if (self._is_unsafe_pickle_call(second_arg) or 
                 self._is_unsafe_shelve_operation(second_arg) or
-                self._is_unsafe_shelve_subscript(second_arg)):
+                self._is_unsafe_shelve_subscript(second_arg) or
+                self._is_unsafe_numpy_call(second_arg) or
+                self._is_unsafe_downstream_call(second_arg)):
                 self.casts.append(self._record_cast(node))
         self.generic_visit(node)
 
@@ -67,6 +90,80 @@ class CastEscapeVisitor(ast.NodeVisitor):
         """Check if node is shelf[key] subscript access."""
         if isinstance(node, ast.Subscript):
             return self._is_shelve_instance(node.value)
+        return False
+
+    def _is_true_flag(self, node: ast.expr) -> bool:
+        """
+        Interpret a Python bool expression for high-risk switches.
+        Unknown values are treated as risky because they can be true.
+        """
+        if isinstance(node, ast.Constant) and isinstance(node.value, bool):
+            return node.value
+        return True
+
+    def _numpy_load_allows_pickle(self, node: ast.Call) -> bool:
+        """
+        Detect whether this np.load call can execute the pickling path.
+        We treat explicit `allow_pickle=True` or unknown values as risky.
+        """
+        # Positional: np.load(file, mmap_mode, allow_pickle, ...)
+        if len(node.args) >= 3:
+            return self._is_true_flag(node.args[2])
+
+        # Keyword form: np.load(file, allow_pickle=...)
+        for kw in node.keywords:
+            if kw.arg == "allow_pickle" and kw.value is not None:
+                return self._is_true_flag(kw.value)
+
+        # numpy defaults to allow_pickle=False
+        return False
+
+    def _is_unsafe_numpy_call(self, node: ast.expr) -> bool:
+        """
+        Check if node is a call to numpy.load with unsafe flags.
+        """
+        if not isinstance(node, ast.Call):
+            return False
+
+        func = node.func
+        if isinstance(func, ast.Name):
+            if func.id in self.from_imports:
+                mod, name = self.from_imports[func.id]
+                if (mod, name) in UNSAFE_NUMPY_FUNCS:
+                    return self._numpy_load_allows_pickle(node)
+            return False
+
+        if isinstance(func, ast.Attribute):
+            if func.attr == "load":
+                if isinstance(func.value, ast.Name):
+                    module_name = func.value.id
+                    if module_name in self.import_aliases:
+                        module_name = self.import_aliases[module_name]
+                    if (module_name, "load") in UNSAFE_NUMPY_FUNCS:
+                        return self._numpy_load_allows_pickle(node)
+        return False
+
+    def _is_unsafe_downstream_call(self, node: ast.expr) -> bool:
+        """
+        Check for CVE-backed third-party wrapper APIs that delegate to pickle.
+        This is intentionally name-shaped: the stubs enforce types; audit tracks casts.
+        """
+        if not isinstance(node, ast.Call):
+            return False
+
+        func = node.func
+        if isinstance(func, ast.Name):
+            if func.id in self.from_imports:
+                mod, name = self.from_imports[func.id]
+                return (mod, name) in UNSAFE_DOWNSTREAM_FUNCS or name in UNSAFE_DOWNSTREAM_METHODS
+            return func.id in UNSAFE_DOWNSTREAM_METHODS
+
+        if isinstance(func, ast.Attribute):
+            if func.attr in UNSAFE_DOWNSTREAM_METHODS:
+                return True
+            if isinstance(func.value, ast.Name):
+                module_name = self.import_aliases.get(func.value.id, func.value.id)
+                return (module_name, func.attr) in UNSAFE_DOWNSTREAM_FUNCS
         return False
 
     def _is_cast(self, node: ast.expr) -> bool:

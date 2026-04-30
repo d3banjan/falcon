@@ -1,0 +1,13 @@
+from typing import Any
+
+from _unsafe import Unsafe
+
+
+def loads(data: bytes, *args: Any, **kwargs: Any) -> Unsafe[Any]: ...
+def deserialize(data: bytes, *args: Any, **kwargs: Any) -> Unsafe[Any]: ...
+
+
+class Fory:
+    def loads(self, data: bytes, *args: Any, **kwargs: Any) -> Unsafe[Any]: ...
+    def deserialize(self, data: bytes, *args: Any, **kwargs: Any) -> Unsafe[Any]: ...
+
