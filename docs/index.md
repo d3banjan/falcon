@@ -1,9 +1,7 @@
 ---
-layout: home
+layout: page
 title: Falcon
 ---
-
-# Falcon
 
 {% include research_status.html %}
 
