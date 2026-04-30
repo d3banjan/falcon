@@ -1,4 +1,11 @@
+---
+layout: page
+title: Launch Quiz
+---
+
 # Launch Quiz: sanity-check the tool end-to-end
+
+{% include research_status.html %}
 
 This is a step-by-step validation you can run in a fresh project folder.
 

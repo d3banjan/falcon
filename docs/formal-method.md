@@ -5,6 +5,8 @@ title: Formal Method
 
 # Formal Method
 
+{% include research_status.html %}
+
 Falcon uses formal methods to discipline a practical engineering workflow.
 
 The basic question is:

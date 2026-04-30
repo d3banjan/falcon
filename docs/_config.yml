@@ -4,5 +4,5 @@ theme: minima
 header_pages:
   - formal-method.md
   - cves-cwes.md
+  - coverage-analysis.md
   - mvp-results.md
-

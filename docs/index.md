@@ -5,6 +5,8 @@ title: Falcon
 
 # Falcon
 
+{% include research_status.html %}
+
 Software security is usually a systems problem, not a single-line problem.
 
 A vulnerability becomes expensive when unsafe behavior is allowed to travel through a codebase unnoticed: a library accepts bytes, a helper deserializes them, application code treats the result as trusted, and CI sees ordinary Python. The payoff of Falcon is to move that risk earlier. Instead of waiting for every upstream package, deployment, and reviewer to line up perfectly, Falcon lets application teams block unsafe use at the type-checking step.
@@ -33,6 +35,8 @@ Falcon does not claim that CPython, mypy, pyright, or every dependency is formal
 ## Why this matters for CVEs
 
 Many CVEs are not fixed everywhere at once. Projects pin old versions, vendors disagree about threat models, and some advisories are treated as "trusted input only." Falcon helps downstream application teams anyway: annotated stubs make unsafe deserialization APIs return `Unsafe[Any]`, and strict type-checking blocks unaudited use before deployment.
+
+Current evidence-set coverage: Falcon catches or partially catches 18 / 26 (69%) reviewed Python ecosystem pickle-backed CVEs. The stricter package-stub number is 10 / 26 (38%). See [Coverage Analysis](coverage-analysis.md) for the per-CVE matrix and CWE boundary.
 
 ## Minimal working example
 

@@ -1,4 +1,11 @@
+---
+layout: page
+title: Architecture
+---
+
 # Architecture
+
+{% include research_status.html %}
 
 ## What this is
 
