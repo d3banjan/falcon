@@ -35,7 +35,11 @@ See `TaintedTypingFramework/Bridging.lean` for the honest gap analysis.
   - **Proved**: `kwargs_any_breaks_soundness`
 - `TaintedTypingFramework/Bridging.lean` — gap analysis → real mypy (informal)
 - `TaintedTypingFramework/TrustedInputs.lean` — trusted-input precondition model
+- `TaintedTypingFramework/ImportedLoaders.lean` — generic imported-loader specs
+- `TaintedTypingFramework/Ingress.lean` — untrusted ingress provenance examples
 - `TaintedTypingFramework/LoadTime.lean` — load-time risk classification model
+- `TaintedTypingFramework/SoundFragment.lean` — replacement invariant excluding
+  known higher-order counterexamples
 - `proofs/` — prose walkthroughs of each theorem
 
 ## Current proof contract
@@ -50,6 +54,13 @@ input.
 - `loads` is modeled as a source of taint at the return point.
 - `TrustedInputs.lean` models trusted call-site preconditions for dangerous
   loaders.
+- `ImportedLoaders.lean` generalizes this to imported code paths via a
+  `ImportedLoaderSpec` containing path, input kind, return type metadata, and
+  load-time-risk metadata. Concrete package APIs are examples of this relation,
+  not separate theorem families.
+- `Ingress.lean` models network, RPC, queue, socket, and remote artifact inputs
+  as untrusted provenance sources that cannot satisfy trusted loader
+  preconditions directly.
 - `LoadTime.lean` classifies loader families whose execution may happen before
   any returned value is quarantined.
 - The practical claim is therefore that Falcon can keep returned values tainted,
@@ -74,14 +85,20 @@ Expected output: build succeeds with `sorry`-declaration warnings only.
 | Getattr | ✅ Proved | Extended `ExprGetattr` model |
 | Kwargs | ✅ Proved | Extended `ExprKwarg` model |
 | Trusted loader preconditions | ✅ Proved | `TrustedInputs.lean` requires trusted inputs and still returns `Unsafe[Any]` |
+| Generic imported-loader specs | ✅ Proved | `ImportedLoaders.lean` models library paths as data, not new constructors |
+| Ingress provenance rejection | ✅ Proved | `Ingress.lean` rejects direct network/RPC/queue/socket/artifact ingress at trusted loader calls |
 | Load-time risk classification | ✅ Proved | `LoadTime.lean` separates call-time risk from returned-value quarantine |
+| Replacement sound fragment | ✅ Proved | `SoundFragment.lean` rejects the counterexample shapes found in `Soundness.lean` |
 
 ## Lean backlog
 
-- Extend the trusted-input model into a fuller ingress-provenance lattice for
-  network, RPC, queue, socket, and remote artifact sources.
-- Connect load-time risk classification to provenance so untrusted ingress is
-  rejected before dangerous loader execution, not only quarantined afterward.
+- Prefer `ImportedLoaders.lean` for future package/API coverage: imported code
+  paths should be data in a generic spec, not new Lean constructors.
+- Unify or retire the older enumerated `Loader` examples once the generic
+  imported-loader model has enough documentation and regression coverage.
+- Extend ingress provenance beyond the current examples into validator and
+  promotion APIs that construct `TrustedBytes`, `TrustedPath`, and trusted
+  artifacts.
 - Finish existing Lean placeholders:
   `eval_closure_noloads_body`, `typed_concrete_no_loads`, and
   `cast_only_escape` in `Soundness.lean`. Current counterexamples show these

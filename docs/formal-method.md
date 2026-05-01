@@ -42,16 +42,20 @@ The first practical extension is now a precondition theorem for loader call site
 
 - dangerous load primitives require trusted sources (`TrustedBytes` and
   `TrustedPath`) before execution;
+- imported package APIs are modeled generically as code-path specifications with
+  an input kind and load-time-risk flag, not as a new theorem for every library;
 - trusted-source admission still produces `Unsafe[Any]` until an explicit
   validation step restores a concrete type;
+- network, RPC, queue, socket, and remote artifact ingress sources are modeled
+  as untrusted and cannot directly satisfy trusted loader preconditions;
 - load-time execution risk is classified separately from returned-value
   quarantine, because code can execute before any value is returned.
 
-The remaining theorem backlog is to connect those call-site preconditions to a
-full ingress-provenance lattice for network, RPC, queue, socket, and remote
-artifact sources. This lines up with CWE-502 rows that describe code execution
-during `load(s)` and with the remaining `Soundness.lean` placeholders tracked
-in `proofs/` and `lean/README.md`.
+The remaining theorem backlog is to model validator and promotion APIs that turn
+reviewed ingress into `TrustedBytes`, `TrustedPath`, or trusted artifacts. This
+lines up with CWE-502 rows that describe code execution during `load(s)` and
+with the remaining `Soundness.lean` placeholders tracked in `proofs/` and
+`lean/README.md`.
 
 ## Branches outside this proof
 

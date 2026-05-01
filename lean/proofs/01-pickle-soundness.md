@@ -56,8 +56,17 @@ this theorem shape:
 - Accepted dangerous-loader calls still return `Unsafe[Any]`.
 - Load-time risk is classified separately from the returned `Unsafe[Any]` type.
 
-Remaining backlog: connect load-time effects to ingress provenance, because code
-may execute before any value is returned.
+`ImportedLoaders.lean` generalizes this beyond named Lean constructors: a
+dangerous imported API is represented by a path plus an input-kind/return/risk
+specification. Package-specific APIs such as Embedchain, Horovod, and joblib are
+therefore examples of a generic relation, not separate proof principles.
+
+`Ingress.lean` adds the first provenance layer for network, RPC, queue, socket,
+and remote artifact sources. These values are untrusted and cannot satisfy
+`TrustedBytes` / `TrustedPath` preconditions directly.
+
+Remaining backlog: model validator and promotion APIs that turn reviewed ingress
+into trusted inputs, because code may execute before any value is returned.
 
 This prevents an unsound model expansion: even trusted input does not let the
 current theorem conclude “safe execution,” only “explicitly quarantined output.”
