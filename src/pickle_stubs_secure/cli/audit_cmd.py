@@ -53,6 +53,7 @@ TRUST_PROMOTION_FUNCS = {
     ("pickle_stubs_secure.trust", "verify_path_sha256"): "trusted-path",
     ("pickle_stubs_secure.trust", "trusted_bytes"): "trusted-bytes",
     ("pickle_stubs_secure.trust", "verify_bytes_sha256"): "trusted-bytes",
+    ("pickle_stubs_secure.trust", "trusted_binary_io"): "trusted-binary-io",
     ("pickle_stubs_secure.trust", "trusted_artifact"): "trusted-artifact",
 }
 

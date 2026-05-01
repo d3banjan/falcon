@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from hashlib import sha256
 from pathlib import Path
-from typing import NewType
+from typing import BinaryIO, NewType
 
 TrustedPath = NewType("TrustedPath", Path)
 TrustedBytes = NewType("TrustedBytes", bytes)
+TrustedBinaryIO = NewType("TrustedBinaryIO", BinaryIO)
 TrustedArtifact = NewType("TrustedArtifact", Path)
 
 
@@ -39,6 +40,13 @@ def verify_bytes_sha256(data: bytes, expected_sha256: str) -> TrustedBytes:
     if digest != expected_sha256:
         raise ValueError("bytes digest does not match expected SHA-256")
     return TrustedBytes(data)
+
+
+def trusted_binary_io(file: BinaryIO, *, reason: str) -> TrustedBinaryIO:
+    """Mark an already-opened binary stream as reviewed."""
+    if not reason:
+        raise ValueError("trusted_binary_io requires a non-empty reason")
+    return TrustedBinaryIO(file)
 
 
 def trusted_artifact(path: Path, *, reason: str) -> TrustedArtifact:

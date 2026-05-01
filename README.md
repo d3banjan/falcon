@@ -44,7 +44,7 @@ Core stdlib surfaces:
 - `pickle.loads` requires `TrustedBytes` and still returns `Unsafe[Any]`
 - `_pickle.load`, `_pickle.loads`, `_pickle.Unpickler.load`
 - `shelve` read paths: `__getitem__`, `get`, `values`, `items`
-- adjacent deserialization sinks: `cloudpickle.load`, `cloudpickle.loads`, `jsonpickle.decode`, `jsonpickle.loads`, `dill.load`, `dill.loads`, `joblib.load`, `marshal.load`, `marshal.loads`, `pandas.read_pickle`, `pandas.io.pickle.read_pickle`, `yaml.load`, `yaml.unsafe_load`, `yaml.full_load`
+- adjacent deserialization sinks: `cloudpickle.load` requires `TrustedBinaryIO`, `cloudpickle.loads` requires `TrustedBytes`, `jsonpickle.decode`, `jsonpickle.loads`, `dill.load` requires `TrustedBinaryIO`, `dill.loads` requires `TrustedBytes`, `joblib.load`, `marshal.load`, `marshal.loads`, `pandas.read_pickle`, `pandas.io.pickle.read_pickle`, `yaml.load`, `yaml.unsafe_load`, `yaml.full_load`
 
 CVE-backed downstream pilot surfaces:
 
@@ -62,7 +62,8 @@ CVE-backed downstream pilot surfaces:
 - Horovod cloudpickle codec
 - smolagents remote executor `deserialize` and `loads`
 - cloudpickle/jsonpickle CVE sink-family stubs
-- `joblib.load` requires `TrustedPath` and still returns `Unsafe[Any]`
+- `joblib.load`, pandas `read_pickle`, and pandas `io.pickle.read_pickle`
+  require `TrustedPath` and still return `Unsafe[Any]`
 
 See [cve_db/reports/downstream-stubs-2026-04-30.md](cve_db/reports/downstream-stubs-2026-04-30.md) for the current CVE verdicts.
 See [cve_db/reports/osv-deserialization-candidates-2026-05-01.md](cve_db/reports/osv-deserialization-candidates-2026-05-01.md) for the expanded OSV candidate run.
@@ -113,9 +114,10 @@ This is not a proof that Python, mypy, pyright, or every dependency is sound. It
 ## What Is Out of Scope
 
 - Proving load-time RCE cannot occur across arbitrary APIs. The Lean model and
-  the first real API stubs now cover the `TrustedBytes` / `TrustedPath`
-  boundary for `pickle.loads`, `joblib.load`, and `torch.load`, but broad
-  third-party API adoption remains future work.
+  selected real API stubs now cover the `TrustedBytes` / `TrustedBinaryIO` /
+  `TrustedPath` boundary for `pickle.loads`, `cloudpickle.load(s)`,
+  `dill.load(s)`, `joblib.load`, pandas pickle helpers, and `torch.load`, but
+  broad third-party API adoption remains future work.
 - Authorization, SSRF, path traversal, crypto, race conditions, and business logic CVEs.
 - Full type modeling of every downstream package.
 - Replacing Bandit, Semgrep, Ruff, SAST, or dependency scanning.

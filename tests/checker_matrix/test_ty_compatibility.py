@@ -13,9 +13,9 @@ SOURCE_CVE_FIXTURE = (
 def test_ty_detects_cve_wrapper_stubs() -> None:
     """ty catches overlay-backed CVE wrapper stubs.
 
-    ty 0.0.33 currently reports 34 of the 35 fixture flows. It resolves stdlib
-    marshal before the local overlay, so marshal is tracked as a compatibility
-    gap rather than counted as validated under ty.
+    ty currently reports the non-marshal fixture flows plus raw-input errors. It
+    resolves stdlib marshal before the local overlay, so marshal is tracked as a
+    compatibility gap rather than counted as validated under ty.
     """
     assert CVE_FIXTURE.exists(), f"Fixture not found: {CVE_FIXTURE}"
     rc, output = ty_check(CVE_FIXTURE)

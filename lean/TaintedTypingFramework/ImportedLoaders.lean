@@ -15,6 +15,7 @@ namespace TaintedTypingFramework
 inductive InputKind : Type
   | bytes
   | path
+  | binaryIO
   | artifact
   deriving Repr, DecidableEq
 
@@ -22,6 +23,7 @@ inductive InputKind : Type
 def InputKind.trustedTy : InputKind → Ty
   | InputKind.bytes => TyTrustedBytes
   | InputKind.path => TyTrustedPath
+  | InputKind.binaryIO => TyTrustedBinaryIO
   | InputKind.artifact => TyTrustedArtifact
 
 abbrev ImportedPath := String
@@ -97,6 +99,19 @@ theorem raw_bytes_cannot_call_artifact_loader :
   have hartifact : TrustedInputTyped Γ (Expr.const (Value.vbytes payload)) TyTrustedArtifact := by
     simpa [InputKind.trustedTy, hkind] using htrusted
   exact untrusted_bytes_not_typed_as_trusted_artifact Γ payload hartifact
+
+/-- Raw bytes cannot call a binary-stream loader. -/
+theorem raw_bytes_cannot_call_binary_io_loader :
+    ∀ Γ spec payload,
+      spec.inputKind = InputKind.binaryIO →
+      ¬ ImportedDangerousCall Γ spec
+        (Expr.app spec.expr (Expr.const (Value.vbytes payload))) TyUnsafeAny := by
+  intro Γ spec payload hkind hcall
+  have htrusted : TrustedInputTyped Γ (Expr.const (Value.vbytes payload)) spec.inputKind.trustedTy :=
+    imported_loader_input_must_be_trusted Γ spec (Expr.const (Value.vbytes payload)) hcall
+  have hbinary : TrustedInputTyped Γ (Expr.const (Value.vbytes payload)) TyTrustedBinaryIO := by
+    simpa [InputKind.trustedTy, hkind] using htrusted
+  exact untrusted_bytes_not_typed_as_trusted_binary_io Γ payload hbinary
 
 /-- Raw bytes cannot call a bytes loader unless they have first been promoted to `TrustedBytes`. -/
 theorem raw_bytes_cannot_call_bytes_loader_without_promotion :

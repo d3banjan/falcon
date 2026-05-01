@@ -43,11 +43,13 @@ diagnostic or marks affected calls as `Unsafe[Any]` / trusted-input-gated.
 
 ### 6. Trusted-input gates are opt-in per API
 
-`TrustedBytes` and `TrustedPath` are now enforced on the first stable real APIs:
-`pickle.loads`, `joblib.load`, and `torch.load`. These gates block raw input at
-the call site, but they do not declassify the returned value; successful calls
-still return `Unsafe[Any]`. Other loaders remain returned-value quarantine until
-their public API stubs adopt the same precondition.
+`TrustedBytes`, `TrustedBinaryIO`, and `TrustedPath` are now enforced on selected
+stable real APIs: `pickle.loads`, `cloudpickle.load(s)`, `dill.load(s)`,
+`joblib.load`, pandas `read_pickle`, pandas `io.pickle.read_pickle`, and
+`torch.load`. These gates block raw input at the call site, but they do not
+declassify the returned value; successful calls still return `Unsafe[Any]`.
+Other loaders remain returned-value quarantine until their public API stubs adopt
+the same precondition.
 
 ## Package layout
 

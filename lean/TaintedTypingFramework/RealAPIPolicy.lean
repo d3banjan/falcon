@@ -18,6 +18,42 @@ def pickleLoadsBytesLoaderSpec : ImportedLoaderSpec where
   returnTy := Ty.concrete "Any"
   loadTimeRisk := true
 
+def cloudpickleLoadsBytesLoaderSpec : ImportedLoaderSpec where
+  path := "cloudpickle.loads"
+  inputKind := InputKind.bytes
+  returnTy := Ty.concrete "Any"
+  loadTimeRisk := true
+
+def cloudpickleLoadBinaryIOLoaderSpec : ImportedLoaderSpec where
+  path := "cloudpickle.load"
+  inputKind := InputKind.binaryIO
+  returnTy := Ty.concrete "Any"
+  loadTimeRisk := true
+
+def dillLoadsBytesLoaderSpec : ImportedLoaderSpec where
+  path := "dill.loads"
+  inputKind := InputKind.bytes
+  returnTy := Ty.concrete "Any"
+  loadTimeRisk := true
+
+def dillLoadBinaryIOLoaderSpec : ImportedLoaderSpec where
+  path := "dill.load"
+  inputKind := InputKind.binaryIO
+  returnTy := Ty.concrete "Any"
+  loadTimeRisk := true
+
+def pandasReadPicklePathLoaderSpec : ImportedLoaderSpec where
+  path := "pandas.read_pickle"
+  inputKind := InputKind.path
+  returnTy := Ty.concrete "DataFrame"
+  loadTimeRisk := true
+
+def pandasIOReadPicklePathLoaderSpec : ImportedLoaderSpec where
+  path := "pandas.io.pickle.read_pickle"
+  inputKind := InputKind.path
+  returnTy := Ty.concrete "DataFrame"
+  loadTimeRisk := true
+
 def torchPathLoaderSpec : ImportedLoaderSpec where
   path := "torch.load"
   inputKind := InputKind.path
@@ -38,6 +74,48 @@ theorem no_raw_bytes_to_real_joblib_load :
   intro Γ payload
   exact raw_bytes_cannot_call_path_loader Γ joblibPathLoaderSpec payload rfl
 
+theorem no_raw_bytes_to_real_cloudpickle_loads :
+    ∀ Γ payload,
+      ¬ ImportedDangerousCall Γ cloudpickleLoadsBytesLoaderSpec
+        (Expr.app cloudpickleLoadsBytesLoaderSpec.expr (Expr.const (Value.vbytes payload))) TyUnsafeAny := by
+  intro Γ payload
+  exact raw_bytes_cannot_call_bytes_loader_without_promotion Γ cloudpickleLoadsBytesLoaderSpec payload rfl
+
+theorem no_raw_bytes_to_real_cloudpickle_load :
+    ∀ Γ payload,
+      ¬ ImportedDangerousCall Γ cloudpickleLoadBinaryIOLoaderSpec
+        (Expr.app cloudpickleLoadBinaryIOLoaderSpec.expr (Expr.const (Value.vbytes payload))) TyUnsafeAny := by
+  intro Γ payload
+  exact raw_bytes_cannot_call_binary_io_loader Γ cloudpickleLoadBinaryIOLoaderSpec payload rfl
+
+theorem no_raw_bytes_to_real_dill_loads :
+    ∀ Γ payload,
+      ¬ ImportedDangerousCall Γ dillLoadsBytesLoaderSpec
+        (Expr.app dillLoadsBytesLoaderSpec.expr (Expr.const (Value.vbytes payload))) TyUnsafeAny := by
+  intro Γ payload
+  exact raw_bytes_cannot_call_bytes_loader_without_promotion Γ dillLoadsBytesLoaderSpec payload rfl
+
+theorem no_raw_bytes_to_real_dill_load :
+    ∀ Γ payload,
+      ¬ ImportedDangerousCall Γ dillLoadBinaryIOLoaderSpec
+        (Expr.app dillLoadBinaryIOLoaderSpec.expr (Expr.const (Value.vbytes payload))) TyUnsafeAny := by
+  intro Γ payload
+  exact raw_bytes_cannot_call_binary_io_loader Γ dillLoadBinaryIOLoaderSpec payload rfl
+
+theorem no_raw_bytes_to_real_pandas_read_pickle :
+    ∀ Γ payload,
+      ¬ ImportedDangerousCall Γ pandasReadPicklePathLoaderSpec
+        (Expr.app pandasReadPicklePathLoaderSpec.expr (Expr.const (Value.vbytes payload))) TyUnsafeAny := by
+  intro Γ payload
+  exact raw_bytes_cannot_call_path_loader Γ pandasReadPicklePathLoaderSpec payload rfl
+
+theorem no_raw_bytes_to_real_pandas_io_read_pickle :
+    ∀ Γ payload,
+      ¬ ImportedDangerousCall Γ pandasIOReadPicklePathLoaderSpec
+        (Expr.app pandasIOReadPicklePathLoaderSpec.expr (Expr.const (Value.vbytes payload))) TyUnsafeAny := by
+  intro Γ payload
+  exact raw_bytes_cannot_call_path_loader Γ pandasIOReadPicklePathLoaderSpec payload rfl
+
 theorem no_raw_bytes_to_real_torch_load :
     ∀ Γ payload,
       ¬ ImportedDangerousCall Γ torchPathLoaderSpec
@@ -56,12 +134,72 @@ theorem promoted_bytes_can_call_real_pickle_loads :
   exact promoted_input_can_call_imported_loader Γ (networkBytesExpr payload) evidence
     (trustedBytesExpr payload) pickleLoadsBytesLoaderSpec promoted
 
+theorem promoted_bytes_can_call_real_cloudpickle_loads :
+    ∀ Γ payload (_evidence : PromotionEvidence),
+      ImportedDangerousCall Γ cloudpickleLoadsBytesLoaderSpec
+        (Expr.app cloudpickleLoadsBytesLoaderSpec.expr (trustedBytesExpr payload)) TyUnsafeAny := by
+  intro Γ payload evidence
+  have promoted : PromotedInput Γ (networkBytesExpr payload) evidence
+      (trustedBytesExpr payload) TyTrustedBytes :=
+    PromotedInput.bytes Γ IngressSource.network payload evidence
+  exact promoted_input_can_call_imported_loader Γ (networkBytesExpr payload) evidence
+    (trustedBytesExpr payload) cloudpickleLoadsBytesLoaderSpec promoted
+
+theorem trusted_binary_io_can_call_real_cloudpickle_load :
+    ∀ Γ handle,
+      ImportedDangerousCall Γ cloudpickleLoadBinaryIOLoaderSpec
+        (Expr.app cloudpickleLoadBinaryIOLoaderSpec.expr (trustedBinaryIOExpr handle)) TyUnsafeAny := by
+  intro Γ handle
+  exact trusted_imported_input_still_returns_unsafe Γ cloudpickleLoadBinaryIOLoaderSpec
+    (trustedBinaryIOExpr handle) (TrustedInputTyped.T_trusted_binary_io Γ handle)
+
+theorem promoted_bytes_can_call_real_dill_loads :
+    ∀ Γ payload (_evidence : PromotionEvidence),
+      ImportedDangerousCall Γ dillLoadsBytesLoaderSpec
+        (Expr.app dillLoadsBytesLoaderSpec.expr (trustedBytesExpr payload)) TyUnsafeAny := by
+  intro Γ payload evidence
+  have promoted : PromotedInput Γ (networkBytesExpr payload) evidence
+      (trustedBytesExpr payload) TyTrustedBytes :=
+    PromotedInput.bytes Γ IngressSource.network payload evidence
+  exact promoted_input_can_call_imported_loader Γ (networkBytesExpr payload) evidence
+    (trustedBytesExpr payload) dillLoadsBytesLoaderSpec promoted
+
+theorem trusted_binary_io_can_call_real_dill_load :
+    ∀ Γ handle,
+      ImportedDangerousCall Γ dillLoadBinaryIOLoaderSpec
+        (Expr.app dillLoadBinaryIOLoaderSpec.expr (trustedBinaryIOExpr handle)) TyUnsafeAny := by
+  intro Γ handle
+  exact trusted_imported_input_still_returns_unsafe Γ dillLoadBinaryIOLoaderSpec
+    (trustedBinaryIOExpr handle) (TrustedInputTyped.T_trusted_binary_io Γ handle)
+
 theorem promoted_path_can_call_real_joblib_load :
     ∀ Γ path (_evidence : PromotionEvidence),
       ImportedDangerousCall Γ joblibPathLoaderSpec
         (Expr.app joblibPathLoaderSpec.expr (trustedPathExpr path)) TyUnsafeAny := by
   intro Γ path evidence
   exact promoted_remote_path_can_call_path_loader Γ path evidence
+
+theorem promoted_path_can_call_real_pandas_read_pickle :
+    ∀ Γ path (_evidence : PromotionEvidence),
+      ImportedDangerousCall Γ pandasReadPicklePathLoaderSpec
+        (Expr.app pandasReadPicklePathLoaderSpec.expr (trustedPathExpr path)) TyUnsafeAny := by
+  intro Γ path evidence
+  have promoted : PromotedInput Γ (remoteArtifactPathExpr path) evidence
+      (trustedPathExpr path) TyTrustedPath :=
+    PromotedInput.path Γ IngressSource.remoteArtifact path evidence
+  exact promoted_input_can_call_imported_loader Γ (remoteArtifactPathExpr path) evidence
+    (trustedPathExpr path) pandasReadPicklePathLoaderSpec promoted
+
+theorem promoted_path_can_call_real_pandas_io_read_pickle :
+    ∀ Γ path (_evidence : PromotionEvidence),
+      ImportedDangerousCall Γ pandasIOReadPicklePathLoaderSpec
+        (Expr.app pandasIOReadPicklePathLoaderSpec.expr (trustedPathExpr path)) TyUnsafeAny := by
+  intro Γ path evidence
+  have promoted : PromotedInput Γ (remoteArtifactPathExpr path) evidence
+      (trustedPathExpr path) TyTrustedPath :=
+    PromotedInput.path Γ IngressSource.remoteArtifact path evidence
+  exact promoted_input_can_call_imported_loader Γ (remoteArtifactPathExpr path) evidence
+    (trustedPathExpr path) pandasIOReadPicklePathLoaderSpec promoted
 
 theorem promoted_path_can_call_real_torch_load :
     ∀ Γ path (_evidence : PromotionEvidence),
@@ -76,7 +214,15 @@ theorem promoted_path_can_call_real_torch_load :
 
 theorem real_api_policy_preserves_unsafe_return :
     ∀ Γ spec arg τ,
-      spec = pickleLoadsBytesLoaderSpec ∨ spec = joblibPathLoaderSpec ∨ spec = torchPathLoaderSpec →
+      spec = pickleLoadsBytesLoaderSpec ∨
+        spec = cloudpickleLoadsBytesLoaderSpec ∨
+        spec = cloudpickleLoadBinaryIOLoaderSpec ∨
+        spec = dillLoadsBytesLoaderSpec ∨
+        spec = dillLoadBinaryIOLoaderSpec ∨
+        spec = joblibPathLoaderSpec ∨
+        spec = pandasReadPicklePathLoaderSpec ∨
+        spec = pandasIOReadPicklePathLoaderSpec ∨
+        spec = torchPathLoaderSpec →
       ImportedDangerousCall Γ spec (Expr.app spec.expr arg) τ →
       τ = TyUnsafeAny := by
   intro Γ spec arg τ _ hcall

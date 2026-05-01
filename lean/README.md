@@ -40,7 +40,7 @@ See `TaintedTypingFramework/Bridging.lean` for the honest gap analysis.
 - `TaintedTypingFramework/Provenance.lean` — TrustedBytes/TrustedPath/TrustedArtifact promotion boundary
 - `TaintedTypingFramework/LoadTime.lean` — load-time risk classification model
 - `TaintedTypingFramework/WrapperForwarding.lean` — wrapper evidence forwarding into generic imported-loader specs
-- `TaintedTypingFramework/RealAPIPolicy.lean` — enforced trusted-input policy for `pickle.loads`, `joblib.load`, and `torch.load`
+- `TaintedTypingFramework/RealAPIPolicy.lean` — enforced trusted-input policy for selected stable real loaders
 - `TaintedTypingFramework/SoundFragment.lean` — replacement invariant excluding
   known higher-order counterexamples
 - `proofs/` — prose walkthroughs of each theorem
@@ -100,7 +100,7 @@ Expected output: build succeeds with `sorry`-declaration warnings only.
 | Trusted provenance promotion | ✅ Proved | `Provenance.lean` permits promoted inputs while preserving `Unsafe[Any]` returns |
 | Load-time risk classification | ✅ Proved | `LoadTime.lean` separates call-time risk from returned-value quarantine |
 | Wrapper forwarding evidence | ✅ Proved | `WrapperForwarding.lean` turns wrapper evidence into an imported-loader spec and `Unsafe[Any]` taint |
-| Real API trusted-input policy | ✅ Proved | `RealAPIPolicy.lean` connects enforced `pickle.loads`, `joblib.load`, and `torch.load` stubs to the generic imported-loader model |
+| Real API trusted-input policy | ✅ Proved | `RealAPIPolicy.lean` connects enforced `pickle.loads`, `cloudpickle.load(s)`, `dill.load(s)`, `joblib.load`, pandas pickle helper, and `torch.load` stubs to the generic imported-loader model |
 | Replacement sound fragment | ✅ Proved | `SoundFragment.lean` rejects the counterexample shapes found in `Soundness.lean` |
 
 ## Lean backlog
