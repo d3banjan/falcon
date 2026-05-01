@@ -84,17 +84,75 @@ theorem subst_preserves_noloads (e e' : Expr) (x : String) :
 
 /-- Helper: if a closed expression evaluates to a closure and contains
     no loads, then the body of the closure also contains no loads.
-    (Proof requires induction on Eval with a generalized value index.) -/
+    This is false for closure constants: `NoLoads.const` does not inspect
+    a `Value.vclosure` body. -/
 theorem eval_closure_noloads_body (f : Expr) (x : String) (τ : Ty) (body : Expr) :
     Eval f (Value.vclosure [] x τ body) → NoLoads f → NoLoads body := by
   sorry
 
+/-- Counterexample showing why `eval_closure_noloads_body` cannot be proved
+    without either excluding closure constants or strengthening `NoLoads` on
+    values. -/
+theorem eval_closure_noloads_body_counterexample :
+    ∃ (f : Expr) (x : String) (τ : Ty) (body : Expr),
+      Eval f (Value.vclosure [] x τ body) ∧ NoLoads f ∧ ¬ NoLoads body := by
+  let body := Expr.loads (Expr.const (Value.vbytes "payload"))
+  let f := Expr.const (Value.vclosure [] "x" Ty.bytes body)
+  refine ⟨f, "x", Ty.bytes, body, ?_, ?_, ?_⟩
+  · exact Eval.E_const (Value.vclosure [] "x" Ty.bytes body)
+  · exact NoLoads.const (Value.vclosure [] "x" Ty.bytes body) (by
+      intro h
+      rcases h with ⟨w, hw⟩
+      cases hw)
+  · change ¬ NoLoads (Expr.loads (Expr.const (Value.vbytes "payload")))
+    intro h
+    cases h
+
 /-- If an expression is typed at a concrete type and contains no cast,
     then it contains no `loads` subterm and no tainted constants.
-    (Proof requires a substitution lemma for typing; omitted for brevity.) -/
+    This is false as stated: a concrete-typed application may pass an
+    `Unsafe[_]` argument containing `loads` to a function that returns a
+    concrete result. -/
 theorem typed_concrete_no_loads (Γ : TypeEnv) (e : Expr) (τ : Ty) :
     Typed Γ e τ → isConcrete τ → NoCast e → NoLoads e := by
   sorry
+
+/-- Counterexample showing that `typed_concrete_no_loads` needs an additional
+    invariant, such as forbidding unsafe-typed subterms in no-cast concrete
+    programs. -/
+theorem typed_concrete_no_loads_counterexample :
+    ∃ (Γ : TypeEnv) (e : Expr) (τ : Ty),
+      Typed Γ e τ ∧ isConcrete τ ∧ NoCast e ∧ ¬ NoLoads e := by
+  let unsafeAny := Ty.unsafe_ (Ty.concrete "Any")
+  let b := Expr.const (Value.vbytes "payload")
+  let e := Expr.app
+    (Expr.lam "x" unsafeAny (Expr.const (Value.vint 0)))
+    (Expr.loads b)
+  refine ⟨[], e, Ty.int, ?_, ?_, ?_, ?_⟩
+  · exact Typed.T_app []
+      (Expr.lam "x" unsafeAny (Expr.const (Value.vint 0)))
+      (Expr.loads b)
+      unsafeAny
+      Ty.int
+      (Typed.T_lam [] "x" unsafeAny Ty.int (Expr.const (Value.vint 0))
+        (Typed.T_const_int [("x", unsafeAny)] 0))
+      (Typed.T_loads [] b (Typed.T_const_bytes [] "payload"))
+  · intro σ h
+    cases h
+  · exact NoCast.app
+      (Expr.lam "x" unsafeAny (Expr.const (Value.vint 0)))
+      (Expr.loads b)
+      (NoCast.lam "x" unsafeAny (Expr.const (Value.vint 0))
+        (NoCast.const (Value.vint 0)))
+      (NoCast.loads b (NoCast.const (Value.vbytes "payload")))
+  · change ¬ NoLoads
+      (Expr.app
+        (Expr.lam "x" unsafeAny (Expr.const (Value.vint 0)))
+        (Expr.loads b))
+    intro h
+    cases h with
+    | app _ _ _ harg =>
+        cases harg
 
 /-- If an expression contains no `loads` and no tainted constants, then
     its evaluation produces a non-tainted value. -/
@@ -144,7 +202,9 @@ theorem soundness :
 
 /-- **Theorem 2** — `cast` is the only sound escape.
     If a well-typed expression at concrete type contains `loads b`,
-    then it must contain a `cast` subexpression somewhere. -/
+    then it must contain a `cast` subexpression somewhere.
+    This is false as stated for the same higher-order application shape as
+    `typed_concrete_no_loads_counterexample`. -/
 theorem cast_only_escape :
     ∀ (Γ : TypeEnv) (e : Expr) (τ : Ty) (b : Expr),
     Typed Γ e τ →
@@ -152,5 +212,47 @@ theorem cast_only_escape :
     HasLoads e (Expr.loads b) →
     HasCast e := by
   sorry
+
+/-- Counterexample showing that a concrete-typed expression can contain
+    `loads` without `cast` when the unsafe value is consumed by a function whose
+    result type is concrete. -/
+theorem cast_only_escape_counterexample :
+    ∃ (Γ : TypeEnv) (e : Expr) (τ : Ty) (b : Expr),
+      Typed Γ e τ ∧ isConcrete τ ∧ HasLoads e (Expr.loads b) ∧ ¬ HasCast e := by
+  let unsafeAny := Ty.unsafe_ (Ty.concrete "Any")
+  let b := Expr.const (Value.vbytes "payload")
+  let e := Expr.app
+    (Expr.lam "x" unsafeAny (Expr.const (Value.vint 0)))
+    (Expr.loads b)
+  refine ⟨[], e, Ty.int, b, ?_, ?_, ?_, ?_⟩
+  · exact Typed.T_app []
+      (Expr.lam "x" unsafeAny (Expr.const (Value.vint 0)))
+      (Expr.loads b)
+      unsafeAny
+      Ty.int
+      (Typed.T_lam [] "x" unsafeAny Ty.int (Expr.const (Value.vint 0))
+        (Typed.T_const_int [("x", unsafeAny)] 0))
+      (Typed.T_loads [] b (Typed.T_const_bytes [] "payload"))
+  · intro σ h
+    cases h
+  · exact HasLoads.app_r
+      (Expr.lam "x" unsafeAny (Expr.const (Value.vint 0)))
+      (Expr.loads b)
+      (Expr.loads b)
+      (HasLoads.here b)
+  · change ¬ HasCast
+      (Expr.app
+        (Expr.lam "x" unsafeAny (Expr.const (Value.vint 0)))
+        (Expr.loads (Expr.const (Value.vbytes "payload"))))
+    intro h
+    cases h with
+    | app_l _ _ hlam =>
+        cases hlam with
+        | lam_b _ _ _ hbody =>
+            cases hbody
+    | app_r _ _ harg =>
+        cases harg with
+        | loads_b _ hb =>
+            cases hb
 
 end TaintedTypingFramework

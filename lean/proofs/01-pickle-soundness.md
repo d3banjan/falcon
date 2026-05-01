@@ -45,16 +45,19 @@ fact that `Typed` is syntax-directed.
 The next proof layer is not a stronger variant of these two theorems, but a
 separate obligation about **when** dangerous loaders may run.
 
-`TrustedInputs.lean` now implements the first version of this theorem shape:
+`TrustedInputs.lean` and `LoadTime.lean` now implement the first version of
+this theorem shape:
 
 - `TrustedBytes` and `TrustedPath` are explicit preconditions on dangerous
   deserialiser call sites.
-- Loader families such as `pickle`, `cloudpickle`, unsafe YAML, and `torch` can
+- Loader families such as `pickle`, `cloudpickle`, unsafe YAML, `torch`, `dill`,
+  `joblib`, `marshal`, pandas pickle helpers, skops, Embedchain, and Horovod can
   be called only when their input has the expected trusted type.
 - Accepted dangerous-loader calls still return `Unsafe[Any]`.
+- Load-time risk is classified separately from the returned `Unsafe[Any]` type.
 
-Remaining backlog: encode load-time effects as an explicit vulnerability class,
-because code may execute before any value is returned.
+Remaining backlog: connect load-time effects to ingress provenance, because code
+may execute before any value is returned.
 
 This prevents an unsound model expansion: even trusted input does not let the
 current theorem conclude “safe execution,” only “explicitly quarantined output.”

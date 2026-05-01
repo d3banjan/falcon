@@ -44,12 +44,14 @@ The first practical extension is now a precondition theorem for loader call site
   `TrustedPath`) before execution;
 - trusted-source admission still produces `Unsafe[Any]` until an explicit
   validation step restores a concrete type;
-- the remaining theorem backlog is to encode load-time execution risk directly
-  (code can execute before any value is returned).
+- load-time execution risk is classified separately from returned-value
+  quarantine, because code can execute before any value is returned.
 
-This backlog lines up with CWE-502 rows that describe code execution during
-`load(s)` and with the remaining `Soundness.lean` placeholders tracked in
-`proofs/` and `lean/README.md`.
+The remaining theorem backlog is to connect those call-site preconditions to a
+full ingress-provenance lattice for network, RPC, queue, socket, and remote
+artifact sources. This lines up with CWE-502 rows that describe code execution
+during `load(s)` and with the remaining `Soundness.lean` placeholders tracked
+in `proofs/` and `lean/README.md`.
 
 ## Branches outside this proof
 

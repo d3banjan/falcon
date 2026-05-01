@@ -21,10 +21,13 @@ See `TaintedTypingFramework/Bridging.lean` for the honest gap analysis.
 - `TaintedTypingFramework/Vulnerable.lean` — vulnerability predicate `V(v)`
 - `TaintedTypingFramework/Soundness.lean` — Theorem 1 + Theorem 2
   - **Proved**: `subst_preserves_noloads`, `eval_not_tainted_without_loads`
-  - **Proved**: `soundness` (from the lemmas above)
-  - **Stubbed**: `eval_closure_noloads_body` (needs `Eval` induction)
-  - **Stubbed**: `typed_concrete_no_loads` (needs substitution lemma for `Typed`)
-  - **Stubbed**: `cast_only_escape` (needs side-lemma about function types)
+  - **Conditional**: `soundness` still depends on placeholder lemmas
+  - **Counterexample documented**: `eval_closure_noloads_body` is false for
+    closure constants unless `NoLoads` is strengthened for values
+  - **Counterexample documented**: `typed_concrete_no_loads` is false when a
+    concrete-typed function ignores an unsafe argument
+  - **Counterexample documented**: `cast_only_escape` is false for the same
+    higher-order shape
 - `TaintedTypingFramework/Leaks.lean` — counter-examples
   - **Proved**: `any_breaks_soundness` (Any-absorption)
   - **Proved**: `monkey_patch_breaks_soundness` (mutable module state)
@@ -32,6 +35,7 @@ See `TaintedTypingFramework/Bridging.lean` for the honest gap analysis.
   - **Proved**: `kwargs_any_breaks_soundness`
 - `TaintedTypingFramework/Bridging.lean` — gap analysis → real mypy (informal)
 - `TaintedTypingFramework/TrustedInputs.lean` — trusted-input precondition model
+- `TaintedTypingFramework/LoadTime.lean` — load-time risk classification model
 - `proofs/` — prose walkthroughs of each theorem
 
 ## Current proof contract
@@ -44,9 +48,10 @@ It does not currently prove that dangerous loaders are safe on attacker-provided
 input.
 
 - `loads` is modeled as a source of taint at the return point.
-- The model intentionally does not represent the load-time effects (including
-  arbitrary code execution) of `pickle.loads`/`cloudpickle.loads`/`torch.load`
-  and unsafe loaders.
+- `TrustedInputs.lean` models trusted call-site preconditions for dangerous
+  loaders.
+- `LoadTime.lean` classifies loader families whose execution may happen before
+  any returned value is quarantined.
 - The practical claim is therefore that Falcon can keep returned values tainted,
   not that load-time execution is blocked.
 
@@ -62,22 +67,22 @@ Expected output: build succeeds with `sorry`-declaration warnings only.
 
 | Theorem | Status | Notes |
 |---------|--------|-------|
-| Theorem 1 (soundness) | ✅ Proved | Depends on 2 stubbed lemmas |
-| Theorem 2 (cast = only escape) | ⬜ Stubbed | `app_r` case needs function-type side-lemma |
+| Theorem 1 (soundness) | Conditional | Depends on placeholder lemmas; counterexamples show the current statements need stronger invariants |
+| Theorem 2 (cast = only escape) | Blocked | Counterexample shows the statement is false for ignored unsafe arguments |
 | Any-absorption | ✅ Proved | `TyAny` + `TypedAny` |
 | Monkey-patch | ✅ Proved | `EvalMonkey` |
 | Getattr | ✅ Proved | Extended `ExprGetattr` model |
 | Kwargs | ✅ Proved | Extended `ExprKwarg` model |
 | Trusted loader preconditions | ✅ Proved | `TrustedInputs.lean` requires trusted inputs and still returns `Unsafe[Any]` |
+| Load-time risk classification | ✅ Proved | `LoadTime.lean` separates call-time risk from returned-value quarantine |
 
 ## Lean backlog
 
-- Extend the first trusted-input model beyond the current `TrustedBytes` /
-  `TrustedPath` precondition theorem into a fuller ingress-provenance lattice
-  for network, RPC, queue, and remote artifact sources.
-- Add a theorem family for load-time risk classification:
-  `load(s)` may execute before any typed return, so return-only proofs alone are
-  not enough to cover the published CVE semantics.
+- Extend the trusted-input model into a fuller ingress-provenance lattice for
+  network, RPC, queue, socket, and remote artifact sources.
+- Connect load-time risk classification to provenance so untrusted ingress is
+  rejected before dangerous loader execution, not only quarantined afterward.
 - Finish existing Lean placeholders:
   `eval_closure_noloads_body`, `typed_concrete_no_loads`, and
-  `cast_only_escape` in `Soundness.lean`.
+  `cast_only_escape` in `Soundness.lean`. Current counterexamples show these
+  statements need stronger invariants before the `sorry`s can honestly close.
