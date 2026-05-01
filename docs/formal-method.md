@@ -32,7 +32,8 @@ Some CWE families are type-shaped:
 
 - CWE-502 deserialization sources;
 - command execution wrappers with unsafe flags;
-- path or bytes trust boundaries when represented by `TrustedPath` / `TrustedBytes`;
+- path, bytes, or binary-stream trust boundaries when represented by
+  `TrustedPath`, `TrustedBytes`, or `TrustedBinaryIO`;
 - injection sinks when sanitizers have explicit types.
 
 These can be modeled as "untrusted value reaches trusted sink unless a proof-like API intervenes."
@@ -41,12 +42,12 @@ These can be modeled as "untrusted value reaches trusted sink unless a proof-lik
 
 The first practical extension is now a precondition theorem for loader call sites:
 
-- dangerous load primitives require trusted sources (`TrustedBytes` and
-  `TrustedPath`) before execution;
+- selected dangerous load primitives require trusted sources (`TrustedBytes`,
+  `TrustedBinaryIO`, and `TrustedPath`) before execution;
 - imported package APIs are modeled generically as code-path specifications with
   an input kind and load-time-risk flag, not as a new theorem for every library;
 - promotion APIs can turn reviewed ingress into `TrustedBytes`, `TrustedPath`,
-  or trusted artifacts;
+  `TrustedBinaryIO`, or trusted artifacts;
 - trusted-source admission still produces `Unsafe[Any]` until an explicit
   validation step restores a concrete type;
 - network, RPC, queue, socket, and remote artifact ingress sources are modeled

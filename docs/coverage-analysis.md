@@ -1,28 +1,25 @@
 ---
 layout: page
-title: Coverage Analysis
+title: Current Coverage
 ---
 
 {% include research_status.html %}
 
 Last checked: 2026-05-02.
 
-This page measures Falcon against the currently triaged evidence set of Python ecosystem CVEs where the relevant exploit path involves `pickle`, `_pickle`, `shelve`, `cloudpickle`, `jsonpickle`, `dill`, `joblib`, `marshal`, unsafe YAML loading, pickle fallback behavior, or package APIs that wrap those sinks.
+This page is the current coverage status for Falcon against the triaged deserialization evidence set in the Python ecosystem.
 
-This is not yet an exhaustive count of every Python ecosystem advisory matching those terms. The reproducible candidate collector now queries OSV's public PyPI vulnerability dump and found 221 broad deserialization candidates on 2026-05-01 after expanding beyond pickle-heavy keywords. Those candidates still need human triage to remove duplicates, analyzer-bypass advisories, malicious-package records, disputed records, substring matches, and issues outside Falcon's source-to-sink type model.
+Primary scope is the triaged set of 26 CVE rows where the exploit path touches `pickle`, `_pickle`, `shelve`, `cloudpickle`, `jsonpickle`, `dill`, `joblib`, `marshal`, unsafe YAML loading, pickle fallback behavior, or wrappers around those sinks.
 
-This is not a count of all CPython CVEs. CPython memory safety, audit-hook, subprocess, import, TLS, path traversal, authorization, and debugger CVEs are outside Falcon unless the vulnerable branch is a typed deserialization source-to-sink flow.
+A broader OSV PyPI keyword scan (secondary context) produced 221 candidates on 2026-05-01 and remains out of scope for current numerator claims until completed triage.
 
-## Headline
+This is not a full count of all CPython CVEs; memory safety, audit-hook, subprocess, import, TLS, path traversal, authorization, and debugger advisories are excluded unless the vulnerable branch is a typed deserialization source-to-sink flow.
+
+## Headline (Triaged Evidence Set)
 
 | Metric | Count |
 |---|---:|
 | Triaged evidence-set CVEs reviewed | 26 |
-| OSV PyPI keyword candidates awaiting triage | 221 |
-| First-pass OSV catchable candidates | 31 / 221 (14%) |
-| First-pass OSV partial candidates | 37 / 221 (17%) |
-| First-pass OSV non-denominator candidates | 104 / 221 (47%) |
-| First-pass OSV needs source confirmation | 49 / 221 (22%) |
 | Covered at source-or-sink-family classification level | 24 / 26 (92%) |
 | Rows with sink-family or consumer-facing wrapper stubs | 16 / 26 (62%) |
 | Real APIs with trusted-input call preconditions | 9 |
@@ -30,9 +27,48 @@ This is not a count of all CPython CVEs. CPython memory safety, audit-hook, subp
 | Out of scope for this method | 2 / 26 (8%) |
 | Additional OSV-promoted adjacent sink rows | 11 |
 
-The 24 / 26 number is only over the triaged evidence set. It includes direct source catches: if the vulnerable project source is type-checked with Falcon's stdlib, `cloudpickle`, or `jsonpickle` stubs, deserialization calls become `Unsafe[Any]` and cannot silently flow into trusted typed values. This is source-or-sink-family classification coverage, not proof that the corresponding load-time executions are prevented. The stricter 16 / 26 number counts rows with an implemented sink-family, package-level, or conditional API stub. `pickle.loads`, `cloudpickle.load(s)`, `dill.load(s)`, `joblib.load`, pandas `read_pickle`, pandas `io.pickle.read_pickle`, and `torch.load` now also require trusted inputs before the call; broader load-time prevention still requires adopting those preconditions on each real API surface.
+## Claim Tiers
 
-The first-pass OSV bucket report is a triage aid, not a final denominator. It separates duplicates, malicious packages, analyzer-policy advisories, false positives, and records needing source confirmation before Falcon makes coverage claims over them.
+### Call-time gate
+Strongest control: execution is blocked unless a trusted input is required before call.
+
+- **Current count:** 9 real APIs with call-time guards.
+- Examples: `pickle.loads`, `cloudpickle.load(s)`, `dill.load(s)`, `joblib.load`, pandas `read_pickle`, pandas `io.pickle.read_pickle`, and `torch.load`.
+
+### Conditional unsafe return
+Direct call expressions whose unsafe mode can be represented in type stubs.
+
+- Example: `numpy.load(..., allow_pickle=True)`.
+- These checks quarantine the returned value; they are not counted as trusted-input preconditions.
+
+### Returned-value quarantine
+Source-or-sink-family typed blocks where unsafe deserialization outputs are treated as `Unsafe[Any]` and must be handled explicitly before entering trusted channels.
+
+- **Current count:** 16 / 26 (62%).
+- This includes many wrappers and sink-family stubs where Falcon catches the risky return value but does not yet force a trusted-input precondition on every real API entry point.
+
+### Source catch
+Direct source-level flow catches from validated fixtures or sink-family typing before a stable target API is fixed.
+
+- **Current count:** included in the 24 / 26 source-or-sink-family figure.
+- Coverage here confirms the risky flow shape, not universal API-level load-time prevention.
+
+### Out of scope
+
+- **Current count:** 2 / 26 (8%).
+- Includes analyzer-policy advisories and CPython/runtime categories that are outside Falcon’s current model.
+
+## OSV Candidate Context (Secondary)
+
+This candidate set is explicitly secondary context and a triage pipeline input, not a hard denominator.
+
+| OSV bucket | Count | Share |
+|---|---:|---:|
+| OSV PyPI keyword candidates awaiting triage | 221 | 100% |
+| First-pass catchable candidates | 31 | 14% |
+| First-pass partial candidates | 37 | 17% |
+| First-pass non-denominator candidates | 104 | 47% |
+| First-pass needs source confirmation | 49 | 22% |
 
 ## CWE Coverage
 
@@ -47,7 +83,7 @@ The first-pass OSV bucket report is a triage aid, not a final denominator. It se
 
 | Category | Current status | Examples |
 |---|---|---|
-| Direct stdlib pickle source | Caught in typed source; selected load-time gate | `pickle.loads` now requires `TrustedBytes`; `pickle.load`, `_pickle`, and `shelve` reads still provide returned-value quarantine. |
+| Direct stdlib pickle source | Partly caught in typed source; limited call-time gates | `pickle.loads` now requires `TrustedBytes`; `pickle.load`, `_pickle`, and `shelve` reads provide returned-value quarantine. |
 | Conditional unsafe API | Implemented for NumPy | `numpy.load(..., allow_pickle=True)`. |
 | Public wrapper around pickle | Implemented for selected packages | LangChain FAISS, Kedro `ShelveStore`, LlamaIndex `JsonPickleSerializer`, pyfory, Pipecat, torch_musa, PyTorch, vLLM, InvokeAI, Horovod. |
 | Internal service deserialization | Partial | SocketIO queues, LeRobot gRPC, SGLang ZMQ, Tendenci reports. Falcon can catch source code or return flow, but not deployment trust. |
@@ -86,13 +122,10 @@ The first-pass OSV bucket report is a triage aid, not a final denominator. It se
 | CVE-2026-22606 | Fickling | analyzer classification | Out of scope. |
 | CVE-2026-22607 | Fickling | analyzer classification | Out of scope. |
 
-See [CVE Triage](cve-triage.md) for code locations, mypy/pyright validation status, and the immediate fixture backlog.
+See [Evidence Appendix](cve-triage.md) for code locations and validation status.
 
-## What Would Increase Coverage Next
+## Current Gaps
 
-The next high-leverage scope is not packaging. It is wrapper precision around the newly stubbed alternate serialization libraries:
-
-- extend trusted-input adoption beyond the current real API set to selected stable wrappers such as FAISS bytes/path loaders;
-- normalization of the remaining 221 OSV candidates into catchable, partial, out-of-scope, duplicate, malicious-package, and false-positive buckets.
-
-The `cloudpickle`, `jsonpickle`, `dill`, `joblib`, `marshal`, pandas pickle helper, skops, Embedchain, vLLM, InvokeAI, Horovod, and unsafe YAML records are now type-catchable at the sink-family or selected-wrapper level. The `TrustedBytes` / `TrustedBinaryIO` / `TrustedPath` proof and real API checks now cover `pickle.loads`, `cloudpickle.load(s)`, `dill.load(s)`, `joblib.load`, pandas `read_pickle`, pandas `io.pickle.read_pickle`, and `torch.load`, but load-time RCE prevention still requires applying those trusted-input preconditions to more API surfaces.
+- Source-catch-only rows (for example, smolagents, Step-Video-T2V, LeRobot, Tendenci, and SGLang entries) still need stable API-level entry coverage for call-time gates.
+- Several OSV-promoted adjacent sink rows remain in partial/non-denominator buckets and are not yet part of the 26-row denominator.
+- Out-of-scope categories remain excluded unless they map to a typed deserialization source-to-sink branch.

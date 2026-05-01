@@ -2,8 +2,8 @@ title: Falcon
 description: Type-driven security for pickle-backed deserialization.
 theme: minima
 header_pages:
+  - coverage-analysis.md
+  - architecture.md
   - formal-method.md
   - cves-cwes.md
-  - coverage-analysis.md
   - cve-triage.md
-  - mvp-results.md
