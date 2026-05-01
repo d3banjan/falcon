@@ -144,6 +144,12 @@ theorem untrusted_remote_artifact_not_trusted_path :
   intro Γ locator h
   cases h
 
+theorem untrusted_remote_artifact_not_trusted_artifact :
+    ∀ Γ locator,
+      ¬ TrustedInputTyped Γ (remoteArtifactExpr locator) TyTrustedArtifact := by
+  intro Γ locator h
+  cases h
+
 theorem no_network_bytes_to_pickle :
     ∀ Γ payload,
       ¬ TrustedDangerousCall Γ Loader.pickle

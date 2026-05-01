@@ -11,4 +11,5 @@ import TaintedTypingFramework.Bridging
 import TaintedTypingFramework.TrustedInputs
 import TaintedTypingFramework.ImportedLoaders
 import TaintedTypingFramework.Ingress
+import TaintedTypingFramework.Provenance
 import TaintedTypingFramework.LoadTime

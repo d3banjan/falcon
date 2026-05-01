@@ -37,6 +37,7 @@ See `TaintedTypingFramework/Bridging.lean` for the honest gap analysis.
 - `TaintedTypingFramework/TrustedInputs.lean` — trusted-input precondition model
 - `TaintedTypingFramework/ImportedLoaders.lean` — generic imported-loader specs
 - `TaintedTypingFramework/Ingress.lean` — untrusted ingress provenance examples
+- `TaintedTypingFramework/Provenance.lean` — TrustedBytes/TrustedPath/TrustedArtifact promotion boundary
 - `TaintedTypingFramework/LoadTime.lean` — load-time risk classification model
 - `TaintedTypingFramework/SoundFragment.lean` — replacement invariant excluding
   known higher-order counterexamples
@@ -61,6 +62,9 @@ input.
 - `Ingress.lean` models network, RPC, queue, socket, and remote artifact inputs
   as untrusted provenance sources that cannot satisfy trusted loader
   preconditions directly.
+- `Provenance.lean` models explicit promotion evidence that can construct
+  trusted inputs from ingress values. Promotion permits the call but still leaves
+  the dangerous-loader return typed as `Unsafe[Any]`.
 - `LoadTime.lean` classifies loader families whose execution may happen before
   any returned value is quarantined.
 - The practical claim is therefore that Falcon can keep returned values tainted,
@@ -87,6 +91,7 @@ Expected output: build succeeds with `sorry`-declaration warnings only.
 | Trusted loader preconditions | ✅ Proved | `TrustedInputs.lean` requires trusted inputs and still returns `Unsafe[Any]` |
 | Generic imported-loader specs | ✅ Proved | `ImportedLoaders.lean` models library paths as data, not new constructors |
 | Ingress provenance rejection | ✅ Proved | `Ingress.lean` rejects direct network/RPC/queue/socket/artifact ingress at trusted loader calls |
+| Trusted provenance promotion | ✅ Proved | `Provenance.lean` permits promoted inputs while preserving `Unsafe[Any]` returns |
 | Load-time risk classification | ✅ Proved | `LoadTime.lean` separates call-time risk from returned-value quarantine |
 | Replacement sound fragment | ✅ Proved | `SoundFragment.lean` rejects the counterexample shapes found in `Soundness.lean` |
 
@@ -96,9 +101,8 @@ Expected output: build succeeds with `sorry`-declaration warnings only.
   paths should be data in a generic spec, not new Lean constructors.
 - Unify or retire the older enumerated `Loader` examples once the generic
   imported-loader model has enough documentation and regression coverage.
-- Extend ingress provenance beyond the current examples into validator and
-  promotion APIs that construct `TrustedBytes`, `TrustedPath`, and trusted
-  artifacts.
+- Connect the provenance promotion model to more concrete validator APIs as
+  those APIs stabilize.
 - Finish existing Lean placeholders:
   `eval_closure_noloads_body`, `typed_concrete_no_loads`, and
   `cast_only_escape` in `Soundness.lean`. Current counterexamples show these

@@ -17,6 +17,7 @@ namespace TaintedTypingFramework
 
 def TyTrustedBytes : Ty := Ty.concrete "TrustedBytes"
 def TyTrustedPath : Ty := Ty.concrete "TrustedPath"
+def TyTrustedArtifact : Ty := Ty.concrete "TrustedArtifact"
 def TyUnsafeAny : Ty := Ty.unsafe_ (Ty.concrete "Any")
 
 def trustedBytesValue (s : String) : Value :=
@@ -25,8 +26,12 @@ def trustedBytesValue (s : String) : Value :=
 def trustedPathValue (p : String) : Value :=
   Value.vconcrete "TrustedPath" (Value.vbytes p)
 
+def trustedArtifactValue (locator : String) : Value :=
+  Value.vconcrete "TrustedArtifact" (Value.vbytes locator)
+
 def trustedBytesExpr (s : String) : Expr := Expr.const (trustedBytesValue s)
 def trustedPathExpr (p : String) : Expr := Expr.const (trustedPathValue p)
+def trustedArtifactExpr (locator : String) : Expr := Expr.const (trustedArtifactValue locator)
 
 /-- The dangerous loader families modeled by the trusted-input extension. -/
 inductive Loader : Type
@@ -92,6 +97,8 @@ inductive TrustedInputTyped : TypeEnv → Expr → Ty → Prop
   | T_var : ∀ Γ x τ, List.lookup x Γ = some τ → TrustedInputTyped Γ (Expr.var x) τ
   | T_trusted_bytes : ∀ Γ s, TrustedInputTyped Γ (trustedBytesExpr s) TyTrustedBytes
   | T_trusted_path : ∀ Γ p, TrustedInputTyped Γ (trustedPathExpr p) TyTrustedPath
+  | T_trusted_artifact : ∀ Γ locator,
+      TrustedInputTyped Γ (trustedArtifactExpr locator) TyTrustedArtifact
 
 /-- Dangerous-loader calls in the trusted-input extension.
 
@@ -113,6 +120,12 @@ theorem untrusted_bytes_not_typed_as_trusted_bytes :
 /-- Raw bytes are not trusted paths. -/
 theorem untrusted_bytes_not_typed_as_trusted_path :
     ∀ Γ s, ¬ TrustedInputTyped Γ (Expr.const (Value.vbytes s)) TyTrustedPath := by
+  intro Γ s h
+  cases h
+
+/-- Raw bytes are not trusted artifacts. -/
+theorem untrusted_bytes_not_typed_as_trusted_artifact :
+    ∀ Γ s, ¬ TrustedInputTyped Γ (Expr.const (Value.vbytes s)) TyTrustedArtifact := by
   intro Γ s h
   cases h
 

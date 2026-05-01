@@ -69,6 +69,6 @@ def reviewed_load(raw: bytes) -> dict[str, Any]:
 
 ## What Falcon does not claim
 
-Falcon does not patch upstream CVEs. It currently proves post-return quarantine for values produced by dangerous Python deserializers and selected wrappers. It does not yet prove that untrusted bytes, files, sockets, queues, or model artifacts cannot trigger execution during the load itself; that stronger claim is future work for `TrustedBytes` and `TrustedPath`.
+Falcon does not patch upstream CVEs. It currently proves post-return quarantine for values produced by dangerous Python deserializers and selected wrappers. The Lean model now also has a `TrustedBytes` / `TrustedPath` / trusted-artifact promotion boundary, and the checker matrix has a diagnostic wrapper proving that raw paths and bytes can be rejected before a load. Broadly applying that precondition to real third-party APIs remains future work.
 
 Scanner bypasses, malicious-package advisories, intended-execution workflow engines, and disputed by-design rows stay outside Falcon's public coverage denominator.

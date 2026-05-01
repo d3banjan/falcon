@@ -49,13 +49,13 @@ keys are tainted. `Unpack[TypedDict]` restores precision.
 **Mitigation**: require `TypedDict` for all `**kwargs` in security-critical
 functions.
 
-## Trusted-input provenance (future)
+## Trusted-input provenance
 
-Current leaks do not track where `bytes` or file paths come from. The CVE backlog
-needs a provenance layer because load-time deserialization vulnerabilities
-depend on untrusted ingress, not just returned values.
+The base leak catalog does not track where `bytes` or file paths come from. The
+CVE backlog needs a provenance layer because load-time deserialization
+vulnerabilities depend on untrusted ingress, not just returned values.
 
-Future leak entries should include:
+`Ingress.lean` and `Provenance.lean` now include:
 
 - untrusted ingress constructors for message payload, socket reads, RPC bodies,
   and remote checkpoints;

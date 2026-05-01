@@ -103,7 +103,9 @@ This is not a proof that Python, mypy, pyright, or every dependency is sound. It
 
 ## What Is Out of Scope
 
-- Proving load-time RCE cannot occur. That needs future `TrustedBytes` / `TrustedPath` types.
+- Proving load-time RCE cannot occur across arbitrary APIs. The Lean model and
+  diagnostic wrappers now cover the `TrustedBytes` / `TrustedPath` boundary, but
+  broad third-party API adoption remains future work.
 - Authorization, SSRF, path traversal, crypto, race conditions, and business logic CVEs.
 - Full type modeling of every downstream package.
 - Replacing Bandit, Semgrep, Ruff, SAST, or dependency scanning.

@@ -26,7 +26,10 @@ CWE-502 has two different claims:
 - returned-value quarantine: `pickle.loads` returns `Unsafe[Any]`;
 - load-time RCE prevention: untrusted bytes cannot be passed to deserialization at all.
 
-Falcon currently ships the first claim. The second requires future `TrustedBytes` / `TrustedPath` types.
+Falcon ships the first claim for the current public stubs. The Lean model and
+diagnostic wrappers now exercise the second claim with `TrustedBytes`,
+`TrustedPath`, and trusted-artifact promotion, but most real third-party loader
+APIs have not yet been converted to require those inputs.
 
 ## Current downstream targets
 
@@ -48,7 +51,7 @@ See `cve_db/reports/downstream-stubs-2026-04-30.md` for current verdicts.
 
 As of 2026-05-01, the microsite triaged evidence set contains 26 Python ecosystem CVEs involving pickle-backed deserialization or closely related pickle-family sinks. A second promoted set now tracks 11 adjacent serialization-sink rows from OSV for YAML, dill, joblib, marshal, pandas pickle helpers, skops, Embedchain, and torch-load model artifacts.
 
-Falcon currently covers 24 / 26 (92%) of that triaged set at the source-or-sink-family classification level. That is not the same as preventing the corresponding load-time executions. The stricter implemented-stub number is 16 / 26 (62%): these are rows where Falcon already has a sink-family, package-level, or conditional API stub rather than relying only on type-checking the vulnerable project's source. Several still remain trusted-input work rather than current prevention claims.
+Falcon currently covers 24 / 26 (92%) of that triaged set at the source-or-sink-family classification level. That is not the same as preventing the corresponding load-time executions. The stricter implemented-stub number is 16 / 26 (62%): these are rows where Falcon already has a sink-family, package-level, or conditional API stub rather than relying only on type-checking the vulnerable project's source. Several still require per-API trusted-input adoption before they become load-time prevention claims.
 
 This is not the final universe. The OSV PyPI candidate collector found 221 broad keyword candidates on 2026-05-01 after the keyword profile was expanded beyond pickle-heavy terms. First-pass triage marks 31 as catchable, 37 as partial, 49 as needing source confirmation, and the rest as duplicate, malicious-package, analyzer-policy, or false-positive records.
 

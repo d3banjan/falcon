@@ -11,9 +11,6 @@ specification, instead of adding a new Lean constructor for every library API.
 
 namespace TaintedTypingFramework
 
-/-- Trusted artifact inputs, for loaders that consume an already-materialized artifact. -/
-def TyTrustedArtifact : Ty := Ty.concrete "TrustedArtifact"
-
 /-- The external input shape accepted by an imported loader. -/
 inductive InputKind : Type
   | bytes
@@ -99,7 +96,7 @@ theorem raw_bytes_cannot_call_artifact_loader :
     imported_loader_input_must_be_trusted Γ spec (Expr.const (Value.vbytes payload)) hcall
   have hartifact : TrustedInputTyped Γ (Expr.const (Value.vbytes payload)) TyTrustedArtifact := by
     simpa [InputKind.trustedTy, hkind] using htrusted
-  cases hartifact
+  exact untrusted_bytes_not_typed_as_trusted_artifact Γ payload hartifact
 
 /-- Raw bytes cannot call a bytes loader unless they have first been promoted to `TrustedBytes`. -/
 theorem raw_bytes_cannot_call_bytes_loader_without_promotion :
@@ -146,6 +143,12 @@ def joblibPathLoaderSpec : ImportedLoaderSpec where
   returnTy := Ty.concrete "Model"
   loadTimeRisk := true
 
+def modelArtifactLoaderSpec : ImportedLoaderSpec where
+  path := "artifact-registry.load_model"
+  inputKind := InputKind.artifact
+  returnTy := Ty.concrete "Model"
+  loadTimeRisk := true
+
 theorem no_raw_bytes_to_embedchain_openapi_path_loader :
     ∀ Γ payload,
       ¬ ImportedDangerousCall Γ embedchainOpenAPIPathLoaderSpec
@@ -167,5 +170,13 @@ theorem trusted_joblib_path_loader_returns_unsafe :
   intro Γ path
   exact trusted_imported_input_still_returns_unsafe Γ joblibPathLoaderSpec
     (trustedPathExpr path) (TrustedInputTyped.T_trusted_path Γ path)
+
+theorem trusted_artifact_loader_returns_unsafe :
+    ∀ Γ locator,
+      ImportedDangerousCall Γ modelArtifactLoaderSpec
+        (Expr.app modelArtifactLoaderSpec.expr (trustedArtifactExpr locator)) TyUnsafeAny := by
+  intro Γ locator
+  exact trusted_imported_input_still_returns_unsafe Γ modelArtifactLoaderSpec
+    (trustedArtifactExpr locator) (TrustedInputTyped.T_trusted_artifact Γ locator)
 
 end TaintedTypingFramework

@@ -65,8 +65,9 @@ therefore examples of a generic relation, not separate proof principles.
 and remote artifact sources. These values are untrusted and cannot satisfy
 `TrustedBytes` / `TrustedPath` preconditions directly.
 
-Remaining backlog: model validator and promotion APIs that turn reviewed ingress
-into trusted inputs, because code may execute before any value is returned.
+`Provenance.lean` models the explicit promotion step from reviewed ingress into
+`TrustedBytes`, `TrustedPath`, or a trusted artifact. Promotion permits the
+loader call, but the call result remains `Unsafe[Any]`.
 
 This prevents an unsound model expansion: even trusted input does not let the
 current theorem conclude “safe execution,” only “explicitly quarantined output.”
@@ -83,7 +84,7 @@ and concrete counterexamples to reject in this phase are:
 - unvalidated message payloads passed to unsafe `yaml.load` or checkpoint
   loaders.
 
-Related cleanup work is still visible in source as proof placeholders:
+Related cleanup work is still visible in source as the older proof placeholders:
 `eval_closure_noloads_body`, `typed_concrete_no_loads`, and `cast_only_escape`
 in `Soundness.lean`.
 
