@@ -120,14 +120,19 @@ Completed in the current follow-up slice:
   or public APIs are not confirmed.
 - Added the conditional-config Lean policy model for `allow_pickle=True`,
   `safe=False`, `remote_exec=True`, and `trust_remote_code=True`.
+- Added source-shaped direct-pickle checker fixtures for ms-swift, Tendenci,
+  pdfminer.six, LeRobot, SGLang scheduler/encoder/replay paths,
+  manga-image-translator, and PLY.
+- Added the Lean wrapper-forwarding proof family that turns wrapper evidence
+  into an imported-loader spec and `Unsafe[Any]` taint.
 
 Next:
 
-1. Add source-shaped fixtures for source-only direct pickle CVEs: ms-swift,
-   Tendenci, pdfminer.six, LeRobot, SGLang, manga-image-translator, and PLY.
+1. Promote load-time prevention claims only after relevant real APIs require
+   `TrustedBytes`, `TrustedPath`, or trusted artifacts.
 
-2. Add the next Lean wrapper-forwarding proof family that turns wrapper
-   evidence into an imported-loader spec.
+2. Continue OSV candidate normalization and source confirmation for rows that
+   can become stable consumer stubs.
 
 ## Launch Remaining Work
 

@@ -93,6 +93,7 @@ Expected output: build succeeds with `sorry`-declaration warnings only.
 | Ingress provenance rejection | ✅ Proved | `Ingress.lean` rejects direct network/RPC/queue/socket/artifact ingress at trusted loader calls |
 | Trusted provenance promotion | ✅ Proved | `Provenance.lean` permits promoted inputs while preserving `Unsafe[Any]` returns |
 | Load-time risk classification | ✅ Proved | `LoadTime.lean` separates call-time risk from returned-value quarantine |
+| Wrapper forwarding evidence | ✅ Proved | `WrapperForwarding.lean` turns wrapper evidence into an imported-loader spec and `Unsafe[Any]` taint |
 | Replacement sound fragment | ✅ Proved | `SoundFragment.lean` rejects the counterexample shapes found in `Soundness.lean` |
 
 ## Lean backlog
@@ -103,9 +104,10 @@ Expected output: build succeeds with `sorry`-declaration warnings only.
 - Conditional-config proof family is implemented in `ConditionalConfig.lean`
   for unsafe literal flags such as `allow_pickle=True`, `safe=False`,
   `remote_exec=True`, and `trust_remote_code=True`.
-- Add a wrapper-forwarding proof family that turns wrapper evidence into an
-  imported-loader spec when a wrapper forwards trusted input or unsafe config
-  into a dangerous loader.
+- Wrapper-forwarding proof family is implemented in `WrapperForwarding.lean`:
+  wrapper evidence becomes app-type backend evidence, justifies
+  `FalconTaint ... TyUnsafeAny`, does not declassify to concrete types, and can
+  be reused as an `ImportedDangerousCall` precondition.
 - Prefer `ImportedLoaders.lean` for future package/API coverage: imported code
   paths should be data in a generic spec, not new Lean constructors.
 - Unify or retire the older enumerated `Loader` examples once the generic

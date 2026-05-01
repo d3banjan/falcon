@@ -17,7 +17,7 @@ Records are JSON Lines: one CVE-library finding per line.
 
 ## Current Launch Tracker
 
-As of 2026-05-01, use `../docs/session-handoff-2026-05-01.md` as the canonical
+As of 2026-05-02, use `../docs/session-handoff-2026-05-01.md` as the canonical
 session tracker. The first AST semantic-policy rule in `pickle-secure audit`
 now covers unsafe literal configuration such as `safe = False`,
 `remote_exec = True`, `super().__init__(safe=False)`, and direct unsafe
@@ -25,8 +25,10 @@ constructor calls. It emits `unsafe-config` findings mapped to
 `checker-rule-needed`. Deeper Kedro/LlamaIndex/socketio/smolagents checker
 fixtures are now covered, as are stable diagnostic wrapper stubs for vLLM
 PyTorch weight iterators, InvokeAI model-loading helpers, and Horovod
-cloudpickle decoding. The next implementation slice is source-shaped fixtures
-for source-only direct pickle CVEs.
+cloudpickle decoding. Source-shaped direct-pickle CVE fixtures now cover the
+source-only ms-swift, Tendenci, pdfminer.six, LeRobot, SGLang,
+manga-image-translator, and PLY slice. The next implementation slice is
+trusted-input adoption for real APIs and continued OSV candidate triage.
 
 ## Candidate Collection
 

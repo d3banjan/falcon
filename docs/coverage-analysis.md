@@ -5,7 +5,7 @@ title: Coverage Analysis
 
 {% include research_status.html %}
 
-Last checked: 2026-05-01.
+Last checked: 2026-05-02.
 
 This page measures Falcon against the currently triaged evidence set of Python ecosystem CVEs where the relevant exploit path involves `pickle`, `_pickle`, `shelve`, `cloudpickle`, `jsonpickle`, `dill`, `joblib`, `marshal`, unsafe YAML loading, pickle fallback behavior, or package APIs that wrap those sinks.
 
@@ -63,19 +63,19 @@ The first-pass OSV bucket report is a triage aid, not a final denominator. It se
 | CVE-2024-9701 | Kedro | `shelve` wrapper | Implemented target stub. |
 | CVE-2025-3108 | LlamaIndex | `pickle.loads` fallback | Implemented target stub. |
 | CVE-2025-32434 | PyTorch | `torch.load` | Implemented target stub. |
-| CVE-2025-50472 | ModelScope / ms-swift | `pickle.load` | Source catch; public API still needs confirmation. |
+| CVE-2025-50472 | ModelScope / ms-swift | `pickle.load` | Validated source-shaped fixture; public API still needs confirmation. |
 | CVE-2025-61622 | pyfory / pyfury | pickle fallback | Implemented target stub. |
 | CVE-2025-61765 | python-socketio | queue pickle deserialization | Partial target stub; deployment trust remains out of type scope. |
 | CVE-2025-62373 | Pipecat | `pickle.loads` frame deserializer | Implemented target stub. |
 | CVE-2025-65213 | torch_musa | `pickle.load` utility path | Implemented target stub. |
 | CVE-2025-14931 | smolagents | pickle-backed parsing | Partial placeholder stub; exact API still needs source confirmation. |
 | CVE-2025-57622 | Step-Video-T2V | `pickle.loads` endpoint | Source catch only; no stable consumer API identified. |
-| CVE-2026-26215 | manga-image-translator | `pickle.loads` endpoint | Source catch only; auth/nonce behavior is out of scope. |
-| CVE-2026-25874 | LeRobot | `pickle.loads` over gRPC | Source catch only; channel trust/TLS is out of scope. |
-| CVE-2026-23946 | Tendenci | `pickle.loads` report path | Source catch only; authenticated workflow is out of scope. |
-| CVE-2025-64512 | pdfminer.six | `pickle.loads` CMap data | Source catch; consumer PDF API would need a target stub or `TrustedPath`. |
-| CVE-2026-3059 | SGLang | `pickle.loads` over ZMQ | Source catch only; broker authentication is out of scope. |
-| CVE-2025-56005 | PLY | `pickle.load` via `picklefile` | Source catch; disputed CVE and public API policy need confirmation. |
+| CVE-2026-26215 | manga-image-translator | `pickle.loads` endpoint | Validated source-shaped fixture; auth/nonce behavior is out of scope. |
+| CVE-2026-25874 | LeRobot | `pickle.loads` over gRPC | Validated source-shaped fixture; channel trust/TLS is out of scope. |
+| CVE-2026-23946 | Tendenci | `pickle.loads` report path | Validated source-shaped fixture; authenticated workflow is out of scope. |
+| CVE-2025-64512 | pdfminer.six | `pickle.loads` CMap data | Validated source-shaped fixture; consumer PDF API would need a target stub or `TrustedPath`. |
+| CVE-2026-3059 | SGLang | `pickle.loads` over ZMQ | Validated source-shaped fixture; broker authentication is out of scope. |
+| CVE-2025-56005 | PLY | `pickle.load` via `picklefile` | Validated source-shaped fixture; disputed CVE and public API policy need confirmation. |
 | CVE-2025-62703 | Fugue | `cloudpickle.loads` | Sink-family stub implemented; current wrapper remains source-only because upstream moved away from the private helper named in the advisory. |
 | CVE-2025-6279 | Upsonic | `cloudpickle.loads` | Sink-family stub implemented; route/API fixture still needed. |
 | CVE-2024-10190 | Horovod | `cloudpickle.loads` wrapper | `horovod.runner.common.util.codec.loads_base64` wrapper stub implemented. |
@@ -91,7 +91,7 @@ See [CVE Triage](cve-triage.md) for code locations, mypy/pyright validation stat
 
 The next high-leverage scope is not packaging. It is wrapper precision around the newly stubbed alternate serialization libraries:
 
-- source-shaped fixtures for route/file-only rows where no stable consumer API is confirmed;
+- trusted-input adoption for real package APIs where stable public surfaces can require `TrustedBytes`, `TrustedPath`, or trusted artifacts;
 - normalization of the remaining 221 OSV candidates into catchable, partial, out-of-scope, duplicate, malicious-package, and false-positive buckets.
 
 The `cloudpickle`, `jsonpickle`, `dill`, `joblib`, `marshal`, pandas pickle helper, skops, Embedchain, vLLM, InvokeAI, Horovod, and unsafe YAML records are now type-catchable at the sink-family or selected-wrapper level. The `TrustedBytes` / `TrustedPath` proof and diagnostic wrapper now exist, but load-time RCE prevention still requires applying those trusted-input preconditions to each real API surface.
