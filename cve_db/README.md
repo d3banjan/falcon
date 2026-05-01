@@ -22,9 +22,9 @@ session tracker. The first AST semantic-policy rule in `pickle-secure audit`
 now covers unsafe literal configuration such as `safe = False`,
 `remote_exec = True`, `super().__init__(safe=False)`, and direct unsafe
 constructor calls. It emits `unsafe-config` findings mapped to
-`checker-rule-needed`. The next implementation slice is wrapper precision:
-Kedro/LlamaIndex/socketio/smolagents fixtures, then stable wrapper stubs for
-vLLM, InvokeAI, Horovod, and source-confirmed YAML/cloudpickle rows.
+`checker-rule-needed`. Deeper Kedro/LlamaIndex/socketio/smolagents checker
+fixtures are now covered. The next implementation slice is stable wrapper stubs
+for vLLM, InvokeAI, Horovod, and source-confirmed YAML/cloudpickle rows.
 
 ## Candidate Collection
 

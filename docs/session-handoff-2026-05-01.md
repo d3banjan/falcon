@@ -57,9 +57,9 @@ This is the launch handoff for the next Falcon session.
 
 Fixture: `tests/fixtures/fix_cve_downstream_wrappers.py`.
 
-- mypy: 24 expected unsafe assignment errors.
-- pyright: 24 expected unsafe assignment errors.
-- ty: 23 expected unsafe assignment errors; `ty` still resolves stdlib `marshal` before Falcon's overlay.
+- mypy: 30 expected unsafe assignment errors.
+- pyright: 30 expected unsafe assignment errors.
+- ty: 29 expected unsafe assignment errors; `ty` still resolves stdlib `marshal` before Falcon's overlay.
 
 Trusted provenance diagnostic fixture: `tests/fixtures/fix_trusted_provenance.py`.
 
@@ -110,11 +110,13 @@ Completed in the current follow-up slice:
   - Models `StubEvidence`, `ASTEvidence`, and `AppTypeEvidence`.
   - Proves each evidence source can justify the same Falcon taint result.
   - Proves backend evidence does not declassify `Unsafe[Any]`.
+- Added deeper checker fixtures for alternate method spellings already stubbed:
+  Kedro `get` / `load`, LlamaIndex `load` / `loads`, python-socketio callback
+  handling, and smolagents `loads`.
 
 Next:
 
 1. Continue CVE wrapper precision after the semantic-policy prototype.
-   - Deeper fixtures for Kedro `get` / `load`, LlamaIndex `load` / `loads`, python-socketio callback handling, and smolagents `loads`.
    - Stable wrapper stubs for vLLM, InvokeAI, Horovod, and source-confirmed YAML/cloudpickle rows.
 
 2. Keep source-confirmation rows separate from implemented coverage.

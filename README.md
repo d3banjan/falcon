@@ -47,13 +47,14 @@ CVE-backed downstream pilot surfaces:
 
 - `numpy.load(..., allow_pickle=True)`
 - LangChain / langchain-community FAISS deserialization
-- Kedro `ShelveStore` reads
-- LlamaIndex `JsonPickleSerializer`
+- Kedro `ShelveStore` `__getitem__`, `get`, and `load`
+- LlamaIndex `JsonPickleSerializer` `deserialize`, `load`, and `loads`
 - pyfory pickle fallback APIs
-- python-socketio queue manager handlers
+- python-socketio queue manager emit/callback handlers
 - Pipecat LiveKit frame deserializer
 - torch_musa compare utilities
 - PyTorch `torch.load`
+- smolagents remote executor `deserialize` and `loads`
 - cloudpickle/jsonpickle CVE sink-family stubs
 
 See [cve_db/reports/downstream-stubs-2026-04-30.md](cve_db/reports/downstream-stubs-2026-04-30.md) for the current CVE verdicts.
