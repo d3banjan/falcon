@@ -4,6 +4,7 @@ from pathlib import Path
 from tests.conftest import mypy_check
 
 FIXTURE = Path(__file__).parent.parent / "fixtures" / "fix_01_loads_reduce.py"
+CVE_FIXTURE = Path(__file__).parent.parent / "fixtures" / "fix_cve_downstream_wrappers.py"
 
 
 def test_mypy_detects_unsafe_any_on_loads() -> None:
@@ -22,4 +23,14 @@ def test_mypy_strict_mode_enabled() -> None:
     strict_indicators = ["strict", "Strict"]
     assert any(indicator in output.lower() for indicator in strict_indicators) or rc != 0, (
         "mypy should be in strict mode"
+    )
+
+
+def test_mypy_detects_cve_wrapper_stubs() -> None:
+    """mypy catches the CVE-backed downstream wrapper fixture."""
+    assert CVE_FIXTURE.exists(), f"Fixture not found: {CVE_FIXTURE}"
+    rc, output = mypy_check(CVE_FIXTURE)
+    assert rc != 0, f"Expected mypy failure but got exit 0. Output:\n{output}"
+    assert output.count("Unsafe[Any]") >= 15, (
+        f"Expected broad Unsafe[Any] coverage in mypy output but got:\n{output}"
     )

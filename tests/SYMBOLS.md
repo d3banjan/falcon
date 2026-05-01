@@ -22,6 +22,10 @@ This table lists every symbol mutated by pickle-stubs-secure.
 | pipecat.serializers.livekit | LivekitFrameSerializer.deserialize | Unsafe[Any] | CVE wrapper stub |
 | torch_musa.utils.compare_tool | compare utilities | Unsafe[Any] | CVE wrapper stub |
 | torch | load | Unsafe[Any] | CVE wrapper stub |
+| cloudpickle | load | Unsafe[Any] | CVE sink-family stub |
+| cloudpickle | loads | Unsafe[Any] | CVE sink-family stub |
+| jsonpickle | decode | Unsafe[Any] | CVE sink-family stub |
+| jsonpickle | loads | Unsafe[Any] | CVE sink-family stub |
 
 ## Architecture (rev2)
 

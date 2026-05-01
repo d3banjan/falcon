@@ -4,6 +4,7 @@ from pathlib import Path
 from tests.conftest import pyright_check
 
 FIXTURE = Path(__file__).parent.parent / "fixtures" / "fix_01_loads_reduce.py"
+CVE_FIXTURE = Path(__file__).parent.parent / "fixtures" / "fix_cve_downstream_wrappers.py"
 
 
 def test_pyright_detects_unsafe_any_on_loads() -> None:
@@ -30,3 +31,13 @@ def test_pyright_report_any_errors() -> None:
     rc, output = pyright_check(FIXTURE)
     assert rc != 0, "pyright should flag errors on unsafe pickle usage"
     assert "Unsafe" in output, "pyright should report Unsafe type issues"
+
+
+def test_pyright_detects_cve_wrapper_stubs() -> None:
+    """pyright catches the CVE-backed downstream wrapper fixture."""
+    assert CVE_FIXTURE.exists(), f"Fixture not found: {CVE_FIXTURE}"
+    rc, output = pyright_check(CVE_FIXTURE)
+    assert rc != 0, f"Expected pyright failure but got exit 0. Output:\n{output}"
+    assert output.count("Unsafe[Any]") >= 15, (
+        f"Expected broad Unsafe[Any] coverage in pyright output but got:\n{output}"
+    )

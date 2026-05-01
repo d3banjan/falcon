@@ -17,7 +17,7 @@ This installs the package in editable mode plus all dev and test dependencies.
 uv run pytest tests/ -q
 ```
 
-Expected: 93 passed, 3 xfailed.
+Expected: 95 passed, 3 xfailed.
 
 ## Running the CLI
 

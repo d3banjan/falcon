@@ -41,6 +41,7 @@ Core stdlib surfaces:
 - `pickle.load`, `pickle.loads`, `pickle.Unpickler.load`
 - `_pickle.load`, `_pickle.loads`, `_pickle.Unpickler.load`
 - `shelve` read paths: `__getitem__`, `get`, `values`, `items`
+- adjacent pickle-family sinks: `cloudpickle.load`, `cloudpickle.loads`, `jsonpickle.decode`, `jsonpickle.loads`
 
 CVE-backed downstream pilot surfaces:
 
@@ -53,6 +54,7 @@ CVE-backed downstream pilot surfaces:
 - Pipecat LiveKit frame deserializer
 - torch_musa compare utilities
 - PyTorch `torch.load`
+- cloudpickle/jsonpickle CVE sink-family stubs
 
 See [cve_db/reports/downstream-stubs-2026-04-30.md](cve_db/reports/downstream-stubs-2026-04-30.md) for the current CVE verdicts.
 

@@ -18,9 +18,9 @@ The type-checker output is the proof artifact users can run in CI.
 
 ## Current evidence-set result
 
-Falcon currently catches or partially catches 18 / 26 (69%) reviewed Python ecosystem pickle-backed CVEs. Of those, 10 / 26 (38%) have implemented consumer-facing package stubs or conditional API stubs.
+Falcon currently catches or partially catches 24 / 26 (92%) reviewed Python ecosystem pickle-backed CVEs at the source or sink-family level. Of those, 16 / 26 (62%) have implemented sink-family, consumer-facing package, or conditional API stubs.
 
-The misses are concentrated in adjacent pickle-family sinks, especially `cloudpickle` and `jsonpickle`. Those are the next coverage targets before packaging.
+The remaining work is wrapper precision, deeper fixtures for alternate method spellings, and source-shaped fixtures for direct endpoint/internal pickle calls. Packaging is still not the launch bar.
 
 ## Shipped MVP scopes
 

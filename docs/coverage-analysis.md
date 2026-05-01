@@ -18,12 +18,12 @@ This is not a count of all CPython CVEs. CPython memory safety, audit-hook, subp
 | Metric | Count |
 |---|---:|
 | Evidence-set CVEs reviewed | 26 |
-| Currently type-catchable by Falcon's method | 18 / 26 (69%) |
-| Implemented as consumer-facing target stubs | 10 / 26 (38%) |
-| Missing because sink family is not stubbed yet | 6 / 26 (23%) |
+| Currently type-catchable by Falcon's method | 24 / 26 (92%) |
+| Implemented as sink or consumer-facing target stubs | 16 / 26 (62%) |
+| Missing because sink family is not stubbed yet | 0 / 26 (0%) |
 | Out of scope for this method | 2 / 26 (8%) |
 
-The 18 / 26 number includes direct source catches: if the vulnerable project source is type-checked with Falcon's stdlib stubs, calls such as `pickle.loads(...)` become `Unsafe[Any]` and cannot silently flow into trusted typed values. The stricter 10 / 26 number counts only CVEs with current consumer-facing library stubs or conditional API stubs.
+The 24 / 26 number includes direct source catches: if the vulnerable project source is type-checked with Falcon's stdlib, `cloudpickle`, or `jsonpickle` stubs, deserialization calls become `Unsafe[Any]` and cannot silently flow into trusted typed values. The stricter 16 / 26 number counts CVEs with an implemented sink-family, package-level, or conditional API stub. Some of those still need exact wrapper import confirmation before they should be called production-ready.
 
 ## CWE Coverage
 
@@ -42,7 +42,7 @@ The 18 / 26 number includes direct source catches: if the vulnerable project sou
 | Conditional unsafe API | Implemented for NumPy | `numpy.load(..., allow_pickle=True)`. |
 | Public wrapper around pickle | Implemented for selected packages | LangChain FAISS, Kedro `ShelveStore`, LlamaIndex `JsonPickleSerializer`, pyfory, Pipecat, torch_musa, PyTorch. |
 | Internal service deserialization | Partial | SocketIO queues, LeRobot gRPC, SGLang ZMQ, Tendenci reports. Falcon can catch source code or return flow, but not deployment trust. |
-| Alternate pickle-family libraries | Missing | `cloudpickle` and `jsonpickle` CVEs need new stubs. |
+| Alternate pickle-family libraries | Implemented at sink-family level | `cloudpickle.load(s)` and `jsonpickle.decode` now return `Unsafe[Any]`. |
 | Analyzer misclassification | Out of scope | Fickling CVEs are about a security analyzer's verdict, not an application value flowing from deserialization. |
 
 ## Per-CVE Verdicts
@@ -67,12 +67,12 @@ The 18 / 26 number includes direct source catches: if the vulnerable project sou
 | CVE-2025-64512 | pdfminer.six | `pickle.loads` CMap data | Source catch; consumer PDF API would need a target stub or `TrustedPath`. |
 | CVE-2026-3059 | SGLang | `pickle.loads` over ZMQ | Source catch only; broker authentication is out of scope. |
 | CVE-2025-56005 | PLY | `pickle.load` via `picklefile` | Source catch; disputed CVE and public API policy need confirmation. |
-| CVE-2025-62703 | Fugue | `cloudpickle.loads` | Miss: add `cloudpickle` stubs. |
-| CVE-2025-6279 | Upsonic | `cloudpickle.loads` | Miss: add `cloudpickle` stubs. |
-| CVE-2024-10190 | Horovod | `cloudpickle.loads` wrapper | Miss: add `cloudpickle` and Horovod wrapper stubs. |
-| CVE-2024-9053 | vLLM | `cloudpickle.loads` | Miss: add `cloudpickle` stubs. |
-| CVE-2024-0960 | ai-flow | `cloudpickle.loads` | Miss: add `cloudpickle` stubs. |
-| CVE-2020-22083 | jsonpickle | `jsonpickle.decode` | Miss: add `jsonpickle` stubs; disputed/intended-behavior note required. |
+| CVE-2025-62703 | Fugue | `cloudpickle.loads` | Sink-family stub implemented; wrapper fixture still needed. |
+| CVE-2025-6279 | Upsonic | `cloudpickle.loads` | Sink-family stub implemented; route/API fixture still needed. |
+| CVE-2024-10190 | Horovod | `cloudpickle.loads` wrapper | Sink-family stub implemented; Horovod wrapper stub still useful. |
+| CVE-2024-9053 | vLLM | `cloudpickle.loads` | Sink-family stub implemented; vLLM wrapper fixture still needed. |
+| CVE-2024-0960 | ai-flow | `cloudpickle.loads` | Sink-family stub implemented; source-shaped fixture still needed. |
+| CVE-2020-22083 | jsonpickle | `jsonpickle.decode` | Sink-family stub implemented; disputed/intended-behavior note retained. |
 | CVE-2026-22606 | Fickling | analyzer classification | Out of scope. |
 | CVE-2026-22607 | Fickling | analyzer classification | Out of scope. |
 
@@ -80,11 +80,9 @@ See [CVE Triage](cve-triage.md) for code locations, mypy/pyright validation stat
 
 ## What Would Increase Coverage Next
 
-The next high-leverage scope is not packaging. It is stub coverage for alternate pickle-family libraries:
+The next high-leverage scope is not packaging. It is wrapper precision around the newly stubbed alternate pickle-family libraries:
 
-- `cloudpickle.loads`, `cloudpickle.load`;
-- `jsonpickle.decode`;
 - likely `dill.load`, `dill.loads`, and `joblib.load` as adjacent deserialization surfaces;
 - package wrappers around those sinks for Horovod, vLLM, Fugue, Upsonic, and ai-flow.
 
-That would move the currently missing `cloudpickle` / `jsonpickle` records into the type-catchable bucket. It would still not prove load-time RCE prevention; that requires the future `TrustedBytes` / `TrustedPath` proof family.
+The `cloudpickle` and `jsonpickle` records are now type-catchable at the sink-family level. Wrapper stubs would make consumer-facing diagnostics more precise. This still does not prove load-time RCE prevention; that requires the future `TrustedBytes` / `TrustedPath` proof family.
