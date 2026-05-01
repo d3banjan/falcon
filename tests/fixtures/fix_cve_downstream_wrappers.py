@@ -16,6 +16,9 @@ import torch
 import yaml
 import pandas as pd
 from embedchain.loaders.openapi import OpenAPILoader
+from horovod.runner.common.util.codec import loads_base64
+from invokeai.app.services.model_load.model_load_default import ModelLoadService
+from invokeai.backend.model_manager.model_on_disk import ModelOnDisk
 from kedro.io import ShelveStore
 from langchain.vectorstores.faiss import FAISS as LegacyFAISS
 from langchain_community.vectorstores.faiss import FAISS
@@ -25,6 +28,10 @@ from smolagents import RemotePythonExecutor
 from torch_musa.utils.compare_tool import compare_for_single_op
 from torch_musa.utils.compare_tool import nan_inf_track_for_single_op
 from pandas.io import pickle as pandas_io_pickle
+from vllm.model_executor.model_loader.weight_utils import (
+    multi_thread_pt_weights_iterator,
+    pt_weights_iterator,
+)
 
 
 payload = b"..."
@@ -40,6 +47,9 @@ pandas_model: dict[str, Any] = pd.read_pickle("frame.pkl")
 pandas_io_model: dict[str, Any] = pandas_io_pickle.read_pickle("frame.pkl")
 skops_model: dict[str, Any] = Card("model.skops").get_model()
 embedchain_docs: list[dict[str, Any]] = OpenAPILoader().load_data("openapi.yaml")
+horovod_value: dict[str, Any] = loads_base64("...")
+invoke_state: dict[str, Any] = ModelOnDisk().load_state_dict("checkpoint.pt")
+invoke_model: dict[str, Any] = ModelLoadService().load_model_from_path("checkpoint.pt")
 faiss_index: dict[str, Any] = FAISS.deserialize_from_bytes(payload)
 legacy_faiss_index: dict[str, Any] = LegacyFAISS.deserialize_from_bytes(payload)
 legacy_faiss_local: dict[str, Any] = LegacyFAISS.load_local("index")
@@ -59,5 +69,7 @@ torch_value: dict[str, Any] = torch.load("checkpoint.pt")
 frame: dict[str, Any] = LivekitFrameSerializer().deserialize(payload)
 comparison: dict[str, Any] = compare_for_single_op("payload.pkl")
 comparison_nan: dict[str, Any] = nan_inf_track_for_single_op("payload.pkl")
+vllm_weight: dict[str, Any] = next(pt_weights_iterator("model"))
+vllm_thread_weight: dict[str, Any] = next(multi_thread_pt_weights_iterator("model"))
 
 reviewed = cast(dict[str, Any], FAISS.deserialize_from_bytes(payload))  # trust: cve-regression fixture

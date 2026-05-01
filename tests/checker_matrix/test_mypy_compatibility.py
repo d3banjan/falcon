@@ -31,6 +31,6 @@ def test_mypy_detects_cve_wrapper_stubs() -> None:
     assert CVE_FIXTURE.exists(), f"Fixture not found: {CVE_FIXTURE}"
     rc, output = mypy_check(CVE_FIXTURE)
     assert rc != 0, f"Expected mypy failure but got exit 0. Output:\n{output}"
-    assert output.count("error:") >= 30 and output.count("Unsafe[") >= 30, (
+    assert output.count("error:") >= 35 and output.count("Unsafe[") >= 35, (
         f"Expected broad Unsafe[Any] coverage in mypy output but got:\n{output}"
     )

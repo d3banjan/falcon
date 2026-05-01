@@ -57,9 +57,9 @@ This is the launch handoff for the next Falcon session.
 
 Fixture: `tests/fixtures/fix_cve_downstream_wrappers.py`.
 
-- mypy: 30 expected unsafe assignment errors.
-- pyright: 30 expected unsafe assignment errors.
-- ty: 29 expected unsafe assignment errors; `ty` still resolves stdlib `marshal` before Falcon's overlay.
+- mypy: 35 expected unsafe diagnostics.
+- pyright: 35 expected unsafe assignment errors.
+- ty: 34 expected unsafe assignment errors; `ty` still resolves stdlib `marshal` before Falcon's overlay.
 
 Trusted provenance diagnostic fixture: `tests/fixtures/fix_trusted_provenance.py`.
 
@@ -113,21 +113,21 @@ Completed in the current follow-up slice:
 - Added deeper checker fixtures for alternate method spellings already stubbed:
   Kedro `get` / `load`, LlamaIndex `load` / `loads`, python-socketio callback
   handling, and smolagents `loads`.
+- Added stable diagnostic wrapper stubs for vLLM PyTorch weight iterators,
+  InvokeAI model-loading helpers, and Horovod cloudpickle decoding.
+- Kept scikit-learn/joblib, Upsonic, ai-flow, Fugue, and route/file-only rows
+  in source-confirmation/source-only status where stable current import paths
+  or public APIs are not confirmed.
+- Added the conditional-config Lean policy model for `allow_pickle=True`,
+  `safe=False`, `remote_exec=True`, and `trust_remote_code=True`.
 
 Next:
 
-1. Continue CVE wrapper precision after the semantic-policy prototype.
-   - Stable wrapper stubs for vLLM, InvokeAI, Horovod, and source-confirmed YAML/cloudpickle rows.
+1. Add source-shaped fixtures for source-only direct pickle CVEs: ms-swift,
+   Tendenci, pdfminer.six, LeRobot, SGLang, manga-image-translator, and PLY.
 
-2. Keep source-confirmation rows separate from implemented coverage.
-   - scikit-learn/joblib wrappers, Upsonic, ai-flow, and route/file-only rows need stable import paths before production claims.
-
-3. Add the next Lean policy model.
-   - Conditional-config proof family for unsafe literal flags such as
-     `allow_pickle=True`, `safe=False`, `remote_exec=True`, and
-     `trust_remote_code=True`.
-   - Wrapper-forwarding proof family that turns wrapper evidence into an
-     imported-loader spec.
+2. Add the next Lean wrapper-forwarding proof family that turns wrapper
+   evidence into an imported-loader spec.
 
 ## Launch Remaining Work
 

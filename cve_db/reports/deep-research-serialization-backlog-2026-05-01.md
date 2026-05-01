@@ -38,9 +38,9 @@ InvokeAI, and Horovod are promoted only as cautious diagnostic-wrapper targets.
 | Package | Advisory | Candidate API | Sink | Falcon status |
 |---|---|---|---|---|
 | Embedchain | CVE-2024-23731 / GHSA-rhhj-5436-95vf | `embedchain.loaders.openapi.OpenAPILoader.load_data` | unsafe PyYAML | Implemented target stub plus `trusted-input-debt`. |
-| vLLM | CVE-2025-24357 family | `vllm.model_executor.weight_utils.hf_model_weights_iterator` | `torch.load` | Medium-priority candidate target stub for diagnostics; not a prevention claim. |
-| InvokeAI | CVE-2024-12029 / GHSA-g56c-68pp-6747 | public route `/api/v2/models/install`; internal helpers `invokeai.app.services.model_load.model_load_default.torch_load_file` and `invokeai.backend.model_manager.probe._scan_model` | `torch.load` | Medium-low candidate target stub; prevention needs `TrustedPath`. |
-| Horovod | CVE-2024-10190 family | `horovod.runner.common.util.codec.loads_base64`, reached via `ElasticRendezvousHandler._put_value` | `cloudpickle.loads` | Medium-low candidate target stub; affected-version/source confirmation still matters. |
+| vLLM | CVE-2025-24357 family | `vllm.model_executor.model_loader.weight_utils.pt_weights_iterator`, `multi_thread_pt_weights_iterator` | `torch.load` | Implemented diagnostic target stubs; not a prevention claim. |
+| InvokeAI | CVE-2024-12029 / GHSA-g56c-68pp-6747 | `invokeai.backend.model_manager.model_on_disk.ModelOnDisk.load_state_dict`, `invokeai.app.services.model_load.model_load_default.ModelLoadService.load_model_from_path` | `torch.load` | Implemented diagnostic target stubs; prevention needs `TrustedPath`. |
+| Horovod | CVE-2024-10190 family | `horovod.runner.common.util.codec.loads_base64`, reached via `ElasticRendezvousHandler._put_value` | `cloudpickle.loads` | Implemented diagnostic target stub; affected-version/source confirmation still matters. |
 
 ## Keep Source-Only Or Trusted-Input-Boundary
 
@@ -52,7 +52,7 @@ These rows should not be counted as fully covered by return-type stubs.
 | Feast | CVE-2025-11157 / GHSA-34wm-4hw7-qfjv | Worker reads YAML config with unsafe loader; config provenance is the real boundary. |
 | MONAI | CVE-2025-58756 / GHSA-6vm5-6jv9-rjpj | Checkpoint loading executes during deserialization; a return stub is not enough. |
 | Transformers | CVE-2026-1839 / GHSA-69w3-r845-3855 | Trainer checkpoint resume calls `torch.load`; private flow is source-only for now. |
-| Fugue | CVE-2025-62703 / GHSA-xv5p-fjw5-vrj6 | RPC server decodes with `cloudpickle.loads`; network trust dominates. |
+| Fugue | CVE-2025-62703 / GHSA-xv5p-fjw5-vrj6 | Advisory names private `_decode` in `fugue/rpc/flask.py`, but current upstream source has moved away from that cloudpickle helper; keep source-only rather than overclaiming a current wrapper stub. |
 | ai-flow | CVE-2024-0960 | Advisory names `ai_flow\cli\commands\workflow_command.py` and `cloudpickle.loads`, but the stable consumer API is not confirmed. |
 | Upsonic | CVE-2025-6279 | Route-level evidence names `/tools/add_tool` and `cloudpickle.loads`; keep as needs-source-confirmation until a stable Python API is confirmed. |
 

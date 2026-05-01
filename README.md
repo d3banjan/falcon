@@ -54,6 +54,9 @@ CVE-backed downstream pilot surfaces:
 - Pipecat LiveKit frame deserializer
 - torch_musa compare utilities
 - PyTorch `torch.load`
+- vLLM PyTorch weight iterators
+- InvokeAI model-loading helpers
+- Horovod cloudpickle codec
 - smolagents remote executor `deserialize` and `loads`
 - cloudpickle/jsonpickle CVE sink-family stubs
 

@@ -100,9 +100,9 @@ Expected output: build succeeds with `sorry`-declaration warnings only.
 - Backend-evidence model is implemented in `BackendEvidence.lean`:
   `StubEvidence`, `ASTEvidence`, and `AppTypeEvidence` all justify the same
   taint result without declassifying `Unsafe[Any]`.
-- Add a conditional-config proof family for unsafe literal policy flags such as
-  `allow_pickle=True`, `safe=False`, `remote_exec=True`, and
-  `trust_remote_code=True`.
+- Conditional-config proof family is implemented in `ConditionalConfig.lean`
+  for unsafe literal flags such as `allow_pickle=True`, `safe=False`,
+  `remote_exec=True`, and `trust_remote_code=True`.
 - Add a wrapper-forwarding proof family that turns wrapper evidence into an
   imported-loader spec when a wrapper forwards trusted input or unsafe config
   into a dangerous loader.

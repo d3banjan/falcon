@@ -48,7 +48,7 @@ The first-pass OSV bucket report is a triage aid, not a final denominator. It se
 |---|---|---|
 | Direct stdlib pickle source | Caught in typed source | `pickle.load`, `pickle.loads`, `_pickle`, `shelve` reads. |
 | Conditional unsafe API | Implemented for NumPy | `numpy.load(..., allow_pickle=True)`. |
-| Public wrapper around pickle | Implemented for selected packages | LangChain FAISS, Kedro `ShelveStore`, LlamaIndex `JsonPickleSerializer`, pyfory, Pipecat, torch_musa, PyTorch. |
+| Public wrapper around pickle | Implemented for selected packages | LangChain FAISS, Kedro `ShelveStore`, LlamaIndex `JsonPickleSerializer`, pyfory, Pipecat, torch_musa, PyTorch, vLLM, InvokeAI, Horovod. |
 | Internal service deserialization | Partial | SocketIO queues, LeRobot gRPC, SGLang ZMQ, Tendenci reports. Falcon can catch source code or return flow, but not deployment trust. |
 | Alternate pickle-family libraries | Implemented at sink-family level | `cloudpickle.load(s)` and `jsonpickle.decode` now return `Unsafe[Any]`. |
 | Adjacent Python serialization sinks | Implemented at sink-family or selected wrapper level | `dill.load(s)`, `joblib.load`, `marshal.load(s)`, pandas `read_pickle`, skops `Card.get_model`, Embedchain `OpenAPILoader.load_data`, and unsafe YAML loaders now return `Unsafe[Any]`. This quarantines returned values; it does not prove safe invocation of the loader itself. |
@@ -76,10 +76,10 @@ The first-pass OSV bucket report is a triage aid, not a final denominator. It se
 | CVE-2025-64512 | pdfminer.six | `pickle.loads` CMap data | Source catch; consumer PDF API would need a target stub or `TrustedPath`. |
 | CVE-2026-3059 | SGLang | `pickle.loads` over ZMQ | Source catch only; broker authentication is out of scope. |
 | CVE-2025-56005 | PLY | `pickle.load` via `picklefile` | Source catch; disputed CVE and public API policy need confirmation. |
-| CVE-2025-62703 | Fugue | `cloudpickle.loads` | Sink-family stub implemented; wrapper fixture still needed. |
+| CVE-2025-62703 | Fugue | `cloudpickle.loads` | Sink-family stub implemented; current wrapper remains source-only because upstream moved away from the private helper named in the advisory. |
 | CVE-2025-6279 | Upsonic | `cloudpickle.loads` | Sink-family stub implemented; route/API fixture still needed. |
-| CVE-2024-10190 | Horovod | `cloudpickle.loads` wrapper | Sink-family stub implemented; Horovod wrapper stub still useful. |
-| CVE-2024-9053 | vLLM | `cloudpickle.loads` | Sink-family stub implemented; vLLM wrapper fixture still needed. |
+| CVE-2024-10190 | Horovod | `cloudpickle.loads` wrapper | `horovod.runner.common.util.codec.loads_base64` wrapper stub implemented. |
+| CVE-2024-9053 | vLLM | `cloudpickle.loads` | Sink-family stub implemented; RPC cloudpickle wrapper remains source-confirmation separate from the implemented PyTorch weight-iterator stubs. |
 | CVE-2024-0960 | ai-flow | `cloudpickle.loads` | Sink-family stub implemented; source-shaped fixture still needed. |
 | CVE-2020-22083 | jsonpickle | `jsonpickle.decode` | Sink-family stub implemented; disputed/intended-behavior note retained. |
 | CVE-2026-22606 | Fickling | analyzer classification | Out of scope. |
@@ -91,7 +91,7 @@ See [CVE Triage](cve-triage.md) for code locations, mypy/pyright validation stat
 
 The next high-leverage scope is not packaging. It is wrapper precision around the newly stubbed alternate serialization libraries:
 
-- package wrappers around those sinks for vLLM weight loading, InvokeAI model loading, Horovod cloudpickle decoding, and source-confirmed YAML/cloudpickle rows where the Python API is stable;
+- source-shaped fixtures for route/file-only rows where no stable consumer API is confirmed;
 - normalization of the remaining 221 OSV candidates into catchable, partial, out-of-scope, duplicate, malicious-package, and false-positive buckets.
 
-The `cloudpickle`, `jsonpickle`, `dill`, `joblib`, `marshal`, pandas pickle helper, skops, Embedchain, and unsafe YAML records are now type-catchable at the sink-family or selected-wrapper level. Wrapper stubs would make consumer-facing diagnostics more precise. The `TrustedBytes` / `TrustedPath` proof and diagnostic wrapper now exist, but load-time RCE prevention still requires applying those trusted-input preconditions to each real API surface.
+The `cloudpickle`, `jsonpickle`, `dill`, `joblib`, `marshal`, pandas pickle helper, skops, Embedchain, vLLM, InvokeAI, Horovod, and unsafe YAML records are now type-catchable at the sink-family or selected-wrapper level. The `TrustedBytes` / `TrustedPath` proof and diagnostic wrapper now exist, but load-time RCE prevention still requires applying those trusted-input preconditions to each real API surface.

@@ -23,8 +23,10 @@ now covers unsafe literal configuration such as `safe = False`,
 `remote_exec = True`, `super().__init__(safe=False)`, and direct unsafe
 constructor calls. It emits `unsafe-config` findings mapped to
 `checker-rule-needed`. Deeper Kedro/LlamaIndex/socketio/smolagents checker
-fixtures are now covered. The next implementation slice is stable wrapper stubs
-for vLLM, InvokeAI, Horovod, and source-confirmed YAML/cloudpickle rows.
+fixtures are now covered, as are stable diagnostic wrapper stubs for vLLM
+PyTorch weight iterators, InvokeAI model-loading helpers, and Horovod
+cloudpickle decoding. The next implementation slice is source-shaped fixtures
+for source-only direct pickle CVEs.
 
 ## Candidate Collection
 

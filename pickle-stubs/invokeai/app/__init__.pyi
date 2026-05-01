@@ -1,0 +1,2 @@
+"""InvokeAI app stub package."""
+

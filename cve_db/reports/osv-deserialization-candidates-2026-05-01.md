@@ -50,5 +50,8 @@ Next normalization pass:
 
 1. Split analyzer-bypass records such as Picklescan/Fickling into `out-of-scope`.
 2. Split malicious package records into a separate supply-chain bucket.
-3. Promote package-wrapper rows for InvokeAI, vLLM torch loaders, Horovod, Feast/PyYAML, and marshal-using packages where source locations are available.
+3. Package-wrapper rows for InvokeAI, vLLM torch loaders, and Horovod are now
+   represented as diagnostic wrapper stubs. Continue with Feast/PyYAML and
+   marshal-using packages only where source locations are stable and the claim
+   can stay post-return quarantine rather than load-time prevention.
 4. Keep raw generated files ignored under `cve_db/generated/`.
