@@ -4,10 +4,12 @@ on:
   push:
     branches: [master]
     paths:
+      - '.github/workflows/lean.yml'
       - 'lean/**'
   pull_request:
     branches: [master]
     paths:
+      - '.github/workflows/lean.yml'
       - 'lean/**'
   workflow_dispatch:
 
