@@ -18,10 +18,13 @@ Records are JSON Lines: one CVE-library finding per line.
 ## Current Launch Tracker
 
 As of 2026-05-01, use `../docs/session-handoff-2026-05-01.md` as the canonical
-session tracker. The next implementation slice is the first AST semantic-policy
-rule in `pickle-secure audit` for unsafe literal configuration such as
-`safe = False`, `remote_exec = True`, and `super().__init__(safe=False)`. Keep
-those rows under `checker-rule-needed` until the audit rule and fixtures exist.
+session tracker. The first AST semantic-policy rule in `pickle-secure audit`
+now covers unsafe literal configuration such as `safe = False`,
+`remote_exec = True`, `super().__init__(safe=False)`, and direct unsafe
+constructor calls. It emits `unsafe-config` findings mapped to
+`checker-rule-needed`. The next implementation slice is wrapper precision:
+Kedro/LlamaIndex/socketio/smolagents fixtures, then stable wrapper stubs for
+vLLM, InvokeAI, Horovod, and source-confirmed YAML/cloudpickle rows.
 
 ## Candidate Collection
 

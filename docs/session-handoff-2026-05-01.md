@@ -97,28 +97,35 @@ Preserve these compatibility identifiers unless doing a deliberate breaking rena
 
 ## Recommended Next Launch Slices
 
-1. Implement the first AST semantic-policy rule in `pickle-secure audit`.
-   - Detect class-body `safe = False`.
-   - Detect class-body `remote_exec = True`.
-   - Detect `super().__init__(safe=False)`.
-   - Detect direct constructor calls with unsafe literal config.
-   - Emit category `unsafe-config` and map to `checker-rule-needed`.
+Completed in the current follow-up slice:
 
-2. Add fixtures/tests for the semantic-policy rule.
-   - Keep fixture files small and single-purpose.
-   - Prefer one rule family per test file.
+- Implemented the first AST semantic-policy rule in `pickle-secure audit`.
+  - Detects class-body `safe = False`.
+  - Detects class-body `remote_exec = True`.
+  - Detects `super().__init__(safe=False)`.
+  - Detects direct constructor calls with unsafe literal config.
+  - Emits category `unsafe-config` and maps to `checker-rule-needed`.
+- Added fixtures/tests for the semantic-policy rule.
+- Added a small Lean backend-evidence model.
+  - Models `StubEvidence`, `ASTEvidence`, and `AppTypeEvidence`.
+  - Proves each evidence source can justify the same Falcon taint result.
+  - Proves backend evidence does not declassify `Unsafe[Any]`.
 
-3. Add a small Lean backend-evidence model.
-   - Model `StubEvidence`, `ASTEvidence`, and `AppTypeEvidence`.
-   - Prove each evidence source can justify the same Falcon taint result.
-   - Prove backend evidence does not declassify `Unsafe[Any]`.
+Next:
 
-4. Continue CVE wrapper precision after the semantic-policy prototype.
+1. Continue CVE wrapper precision after the semantic-policy prototype.
    - Deeper fixtures for Kedro `get` / `load`, LlamaIndex `load` / `loads`, python-socketio callback handling, and smolagents `loads`.
    - Stable wrapper stubs for vLLM, InvokeAI, Horovod, and source-confirmed YAML/cloudpickle rows.
 
-5. Keep source-confirmation rows separate from implemented coverage.
+2. Keep source-confirmation rows separate from implemented coverage.
    - scikit-learn/joblib wrappers, Upsonic, ai-flow, and route/file-only rows need stable import paths before production claims.
+
+3. Add the next Lean policy model.
+   - Conditional-config proof family for unsafe literal flags such as
+     `allow_pickle=True`, `safe=False`, `remote_exec=True`, and
+     `trust_remote_code=True`.
+   - Wrapper-forwarding proof family that turns wrapper evidence into an
+     imported-loader spec.
 
 ## Launch Remaining Work
 

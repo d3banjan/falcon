@@ -1,4 +1,4 @@
-"""Implement `pickle-secure audit` — enumerate and check cast-escape sites."""
+"""Implement `pickle-secure audit` — enumerate and check unsafe escape sites."""
 
 import ast
 import json
@@ -57,7 +57,7 @@ class CastEscapeVisitor(ast.NodeVisitor):
         self.source = source
         self.casts: list[dict[str, Any]] = []
         self.import_aliases: dict[str, str] = {}  # {alias_name: real_module}
-        self.from_imports: dict[str, str] = {}  # {alias_name: (real_module, real_name)}
+        self.from_imports: dict[str, tuple[str, str]] = {}
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
         """Track: from X import Y [as Z]."""
@@ -297,6 +297,114 @@ class CastEscapeVisitor(ast.NodeVisitor):
         }
 
 
+class SemanticPolicyVisitor(ast.NodeVisitor):
+    """AST visitor for unsafe literal configuration that stubs cannot see."""
+
+    def __init__(self, filepath: str):
+        self.filepath = filepath
+        self.findings: list[dict[str, Any]] = []
+
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
+        for stmt in node.body:
+            self._record_class_body_statement(stmt)
+            self.visit(stmt)
+
+    def visit_Assign(self, node: ast.Assign) -> None:
+        self.generic_visit(node)
+
+    def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
+        self.generic_visit(node)
+
+    def visit_Call(self, node: ast.Call) -> None:
+        unsafe_keywords = self._unsafe_config_keywords(node)
+        if unsafe_keywords:
+            if self._is_super_init_call(node):
+                self._record_finding(
+                    node.lineno,
+                    "super-init-unsafe-config",
+                    f"super().__init__ forwards unsafe config: {', '.join(unsafe_keywords)}",
+                )
+            elif self._is_constructor_call(node):
+                self._record_finding(
+                    node.lineno,
+                    "constructor-unsafe-config",
+                    f"constructor call uses unsafe config: {', '.join(unsafe_keywords)}",
+                )
+        self.generic_visit(node)
+
+    def _record_class_body_statement(self, stmt: ast.stmt) -> None:
+        if isinstance(stmt, ast.Assign):
+            for target in stmt.targets:
+                self._record_class_unsafe_assignment(target, stmt.value, stmt.lineno)
+        elif isinstance(stmt, ast.AnnAssign) and stmt.value is not None:
+            self._record_class_unsafe_assignment(stmt.target, stmt.value, stmt.lineno)
+
+    def _record_class_unsafe_assignment(
+        self,
+        target: ast.expr,
+        value: ast.expr,
+        lineno: int,
+    ) -> None:
+        if isinstance(target, ast.Name):
+            if target.id == "safe" and self._is_false_literal(value):
+                self._record_finding(lineno, "class-safe-false", "class config sets safe = False")
+            elif target.id == "remote_exec" and self._is_true_literal(value):
+                self._record_finding(
+                    lineno,
+                    "class-remote-exec-true",
+                    "class config sets remote_exec = True",
+                )
+
+    def _unsafe_config_keywords(self, node: ast.Call) -> list[str]:
+        unsafe_keywords = []
+        for keyword in node.keywords:
+            if keyword.arg == "safe" and self._is_false_literal(keyword.value):
+                unsafe_keywords.append("safe=False")
+            elif keyword.arg == "remote_exec" and self._is_true_literal(keyword.value):
+                unsafe_keywords.append("remote_exec=True")
+        return unsafe_keywords
+
+    def _is_constructor_call(self, node: ast.Call) -> bool:
+        func = node.func
+        if isinstance(func, ast.Name):
+            return bool(func.id) and func.id[0].isupper()
+        if isinstance(func, ast.Attribute):
+            return bool(func.attr) and func.attr[0].isupper()
+        return False
+
+    def _is_super_init_call(self, node: ast.Call) -> bool:
+        func = node.func
+        if not isinstance(func, ast.Attribute) or func.attr != "__init__":
+            return False
+        value = func.value
+        return (
+            isinstance(value, ast.Call)
+            and isinstance(value.func, ast.Name)
+            and value.func.id == "super"
+        )
+
+    def _record_finding(self, lineno: int, rule: str, message: str) -> None:
+        line = linecache.getline(self.filepath, lineno).rstrip("\n")
+        self.findings.append(
+            {
+                "type": "unsafe_config",
+                "category": "unsafe-config",
+                "catchability": "checker-rule-needed",
+                "rule": rule,
+                "file": self.filepath,
+                "line": lineno,
+                "code": line,
+                "message": message,
+            }
+        )
+
+    def _is_true_literal(self, node: ast.expr) -> bool:
+        return isinstance(node, ast.Constant) and node.value is True
+
+    def _is_false_literal(self, node: ast.expr) -> bool:
+        return isinstance(node, ast.Constant) and node.value is False
+
+
 def audit_file(filepath: Path) -> list[dict[str, Any]]:
     """AST-walk a single .py file, return list of cast escapes."""
     try:
@@ -309,6 +417,20 @@ def audit_file(filepath: Path) -> list[dict[str, Any]]:
     visitor = CastEscapeVisitor(str(filepath), source)
     visitor.visit(tree)
     return visitor.casts
+
+
+def audit_semantic_policy_file(filepath: Path) -> list[dict[str, Any]]:
+    """AST-walk a single .py file, return unsafe semantic-policy findings."""
+    try:
+        source = filepath.read_text(encoding="utf-8", errors="replace")
+        tree = ast.parse(source, filename=str(filepath))
+    except SyntaxError as e:
+        print(f"Warning: syntax error in {filepath}: {e}", file=sys.stderr)
+        return []
+
+    visitor = SemanticPolicyVisitor(str(filepath))
+    visitor.visit(tree)
+    return visitor.findings
 
 
 def audit(
@@ -338,12 +460,14 @@ def audit(
     require_reason = set(config.get("require_reason", []))
     unknown_tag_mode = config.get("unknown_tag", "error")
 
-    # Collect all casts
+    # Collect all cast escapes and semantic-policy findings
     all_casts = []
+    all_policy_findings = []
     py_files = list(path.rglob("*.py")) if path.is_dir() else [path]
 
     for pyfile in py_files:
         all_casts.extend(audit_file(pyfile))
+        all_policy_findings.extend(audit_semantic_policy_file(pyfile))
 
     # Filter
     if untagged_only:
@@ -411,9 +535,12 @@ def audit(
                     }
                 )
 
+    violations.extend(all_policy_findings)
+
     if json_output:
         output = {
             "total_casts": len(all_casts),
+            "semantic_findings": all_policy_findings,
             "violations": violations,
             "by_tag": _group_by_tag(all_casts) if not tag_filter else {},
         }
@@ -425,6 +552,14 @@ def audit(
         _print_by_tag(all_casts)
     else:
         _print_summary(all_casts, config)
+
+    if all_policy_findings:
+        print("\nSemantic policy findings:")
+        for finding in all_policy_findings:
+            print(
+                f"  {finding['file']}:{finding['line']}: "
+                f"{finding['category']} ({finding['catchability']}): {finding['message']}"
+            )
 
     if violations:
         print("\nViolations:")

@@ -97,9 +97,9 @@ Expected output: build succeeds with `sorry`-declaration warnings only.
 
 ## Lean backlog
 
-- Add a backend-evidence model for the next Falcon architecture slice:
-  `StubEvidence`, `ASTEvidence`, and `AppTypeEvidence` should all justify the
-  same taint result without declassifying `Unsafe[Any]`.
+- Backend-evidence model is implemented in `BackendEvidence.lean`:
+  `StubEvidence`, `ASTEvidence`, and `AppTypeEvidence` all justify the same
+  taint result without declassifying `Unsafe[Any]`.
 - Add a conditional-config proof family for unsafe literal policy flags such as
   `allow_pickle=True`, `safe=False`, `remote_exec=True`, and
   `trust_remote_code=True`.
