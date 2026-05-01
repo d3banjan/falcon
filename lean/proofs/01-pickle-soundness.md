@@ -22,6 +22,10 @@ reach a concrete-typed sink.
 - Application: the function must be a lambda at concrete type; by the
   induction hypothesis its body evaluates to an untainted value.
 
+This is a **post-return** theorem: it proves that once a loader already returned
+an object, typed flows from that object into a trusted sink must cross an
+explicit `cast`.
+
 ## 02 — Cast is the Only Escape (Theorem 2)
 
 **Statement**: If a well-typed expression at concrete type contains
@@ -35,6 +39,41 @@ has a concrete type must have used `cast` to bridge the gap.
 
 **Proof strategy**: Structural induction on the expression, using the
 fact that `Typed` is syntax-directed.
+
+## Provenance-backed trusted-input extension
+
+The next proof layer is not a stronger variant of these two theorems, but a
+separate obligation about **when** dangerous loaders may run.
+
+`TrustedInputs.lean` now implements the first version of this theorem shape:
+
+- `TrustedBytes` and `TrustedPath` are explicit preconditions on dangerous
+  deserialiser call sites.
+- Loader families such as `pickle`, `cloudpickle`, unsafe YAML, and `torch` can
+  be called only when their input has the expected trusted type.
+- Accepted dangerous-loader calls still return `Unsafe[Any]`.
+
+Remaining backlog: encode load-time effects as an explicit vulnerability class,
+because code may execute before any value is returned.
+
+This prevents an unsound model expansion: even trusted input does not let the
+current theorem conclude “safe execution,” only “explicitly quarantined output.”
+Concrete examples that should be documented as accepted scope are:
+
+- a loader called on a user-provided path that is first normalized and checked
+  into `TrustedPath`;
+- a loader called on payload bytes that passed a validator and are represented as
+  `TrustedBytes`;
+
+and concrete counterexamples to reject in this phase are:
+
+- raw network bytes passed directly to `pickle.load`;
+- unvalidated message payloads passed to unsafe `yaml.load` or checkpoint
+  loaders.
+
+Related cleanup work is still visible in source as proof placeholders:
+`eval_closure_noloads_body`, `typed_concrete_no_loads`, and `cast_only_escape`
+in `Soundness.lean`.
 
 ## 03 — Counter-examples
 

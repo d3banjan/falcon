@@ -10,6 +10,7 @@ Start with:
 - `reports/downstream-stubs-2026-04-30.md` — surgical third-party wrapper stub coverage.
 - `reports/osv-deserialization-candidates-2026-05-01.md` — latest reproducible OSV candidate run and promoted sink-family rows.
 - `reports/osv-triage-buckets-2026-05-01.md` — first-pass bucket triage over the 221 OSV candidates.
+- `reports/deep-research-serialization-backlog-2026-05-01.md` — source-confirmed wrapper backlog, do-not-implement list, and Lean proof-model implications.
 - `../docs/cve-database.md` — workflow, schema, catchability categories, and validation policy.
 
 Records are JSON Lines: one CVE-library finding per line.

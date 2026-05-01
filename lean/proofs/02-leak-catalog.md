@@ -48,3 +48,20 @@ keys are tainted. `Unpack[TypedDict]` restores precision.
 
 **Mitigation**: require `TypedDict` for all `**kwargs` in security-critical
 functions.
+
+## Trusted-input provenance (future)
+
+Current leaks do not track where `bytes` or file paths come from. The CVE backlog
+needs a provenance layer because load-time deserialization vulnerabilities
+depend on untrusted ingress, not just returned values.
+
+Future leak entries should include:
+
+- untrusted ingress constructors for message payload, socket reads, RPC bodies,
+  and remote checkpoints;
+- a requirement that dangerous loaders only run on `TrustedBytes`/`TrustedPath`;
+- a theorem that even trusted ingress can return `Unsafe[Any]` and still needs
+  downstream auditing.
+
+This keeps the proof honest: trust is about **permission to call** a loader, not
+about making the loader's result automatically concrete-safe.

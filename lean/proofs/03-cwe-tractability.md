@@ -86,3 +86,18 @@ parameterizing:
 
 Pickle is simply the first instance where `Source = {loads}` and
 `Sink = {concrete-typed use}`.
+
+## CWE-502 extension plan
+
+The same proof family should split into two layers:
+
+1. **Returned-value quarantine** (current model): deserialization results are
+   `Unsafe` and cannot reach concrete sinks without `cast`.
+2. **Trusted-input preconditions** (next): calls to dangerous loaders require
+   a precondition on provenance (`TrustedBytes`/`TrustedPath`), and may still
+   return `Unsafe`.
+
+The second layer is where current CVEs in the backlog are captured: many advisories
+execute during `load(s)` before any meaningful return value exists, so proof
+obligations there are about caller-side trust and admissible load sources, not
+about automatic sanitization from the return type.

@@ -28,10 +28,27 @@ See `TaintedTypingFramework/Bridging.lean` for the honest gap analysis.
 - `TaintedTypingFramework/Leaks.lean` — counter-examples
   - **Proved**: `any_breaks_soundness` (Any-absorption)
   - **Proved**: `monkey_patch_breaks_soundness` (mutable module state)
-  - **Stubbed**: `getattr_breaks_soundness`
-  - **Stubbed**: `kwargs_any_breaks_soundness`
+  - **Proved**: `getattr_breaks_soundness`
+  - **Proved**: `kwargs_any_breaks_soundness`
 - `TaintedTypingFramework/Bridging.lean` — gap analysis → real mypy (informal)
+- `TaintedTypingFramework/TrustedInputs.lean` — trusted-input precondition model
 - `proofs/` — prose walkthroughs of each theorem
+
+## Current proof contract
+
+The Lean model proves only **post-return quarantine**: values returned from
+dangerous deserialisers are typed as `Unsafe[Any]`, and they cannot cross into
+trusted concrete sinks without an explicit `cast`.
+
+It does not currently prove that dangerous loaders are safe on attacker-provided
+input.
+
+- `loads` is modeled as a source of taint at the return point.
+- The model intentionally does not represent the load-time effects (including
+  arbitrary code execution) of `pickle.loads`/`cloudpickle.loads`/`torch.load`
+  and unsafe loaders.
+- The practical claim is therefore that Falcon can keep returned values tainted,
+  not that load-time execution is blocked.
 
 ## Build
 
@@ -49,5 +66,18 @@ Expected output: build succeeds with `sorry`-declaration warnings only.
 | Theorem 2 (cast = only escape) | ⬜ Stubbed | `app_r` case needs function-type side-lemma |
 | Any-absorption | ✅ Proved | `TyAny` + `TypedAny` |
 | Monkey-patch | ✅ Proved | `EvalMonkey` |
-| Getattr | ⬜ Stubbed | Extended `ExprGetattr` defined |
-| Kwargs | ⬜ Stubbed | Extended `ExprKwarg` defined |
+| Getattr | ✅ Proved | Extended `ExprGetattr` model |
+| Kwargs | ✅ Proved | Extended `ExprKwarg` model |
+| Trusted loader preconditions | ✅ Proved | `TrustedInputs.lean` requires trusted inputs and still returns `Unsafe[Any]` |
+
+## Lean backlog
+
+- Extend the first trusted-input model beyond the current `TrustedBytes` /
+  `TrustedPath` precondition theorem into a fuller ingress-provenance lattice
+  for network, RPC, queue, and remote artifact sources.
+- Add a theorem family for load-time risk classification:
+  `load(s)` may execute before any typed return, so return-only proofs alone are
+  not enough to cover the published CVE semantics.
+- Finish existing Lean placeholders:
+  `eval_closure_noloads_body`, `typed_concrete_no_loads`, and
+  `cast_only_escape` in `Soundness.lean`.
