@@ -34,7 +34,7 @@ Falcon does not claim that CPython, mypy, pyright, or every dependency is formal
 
 Many CVEs are not fixed everywhere at once. Projects pin old versions, vendors disagree about threat models, and some advisories are treated as "trusted input only." Falcon helps downstream application teams anyway: annotated stubs make unsafe deserialization APIs return `Unsafe[Any]`, and strict type-checking blocks unaudited use before deployment.
 
-Current triaged evidence-set coverage: Falcon catches or partially catches 24 / 26 (92%) reviewed Python ecosystem pickle-backed CVEs at the source or sink-family level. The stricter implemented stub number is 16 / 26 (62%). A reproducible OSV PyPI feed pass found 221 broad candidates; first-pass triage marks 31 catchable, 37 partial, and 49 needing source confirmation, with the rest excluded as duplicates, malicious packages, analyzer-policy records, or false positives. See [Coverage Analysis](coverage-analysis.md) for the per-CVE matrix and CWE boundary.
+Current triaged evidence-set coverage: Falcon covers 24 / 26 (92%) reviewed Python ecosystem pickle-backed CVE rows at the source-or-sink-family classification level. That is not the same as preventing the corresponding load-time executions. The stricter implemented-stub number is 16 / 26 (62%): those rows have either a sink-family stub or a consumer-facing wrapper annotation, while several still describe execution during load and remain outside Falcon's current prevention claim. A reproducible OSV PyPI feed pass found 221 broad candidates; first-pass triage marks 31 catchable, 37 partial, and 49 needing source confirmation, with the rest excluded as duplicates, malicious packages, analyzer-policy records, or false positives. See [Coverage Analysis](coverage-analysis.md) for the per-CVE matrix and CWE boundary.
 
 ## Minimal working example
 
@@ -69,4 +69,6 @@ def reviewed_load(raw: bytes) -> dict[str, Any]:
 
 ## What Falcon does not claim
 
-Falcon does not patch upstream CVEs. It prevents unaudited vulnerable use from entering your application code.
+Falcon does not patch upstream CVEs. It currently proves post-return quarantine for values produced by dangerous Python deserializers and selected wrappers. It does not yet prove that untrusted bytes, files, sockets, queues, or model artifacts cannot trigger execution during the load itself; that stronger claim is future work for `TrustedBytes` and `TrustedPath`.
+
+Scanner bypasses, malicious-package advisories, intended-execution workflow engines, and disputed by-design rows stay outside Falcon's public coverage denominator.
