@@ -1,6 +1,6 @@
 """Infra test: PEP 561 stub package shadows typeshed in fresh venv.
 
-Creates a fresh venv, pip installs pickle-stubs-secure in editable mode,
+Creates a fresh venv, pip installs Falcon in editable mode,
 installs mypy, then runs mypy on a fixture importing pickle.loads and
 asserts Unsafe[Any] appears in the error output.
 

@@ -1,6 +1,6 @@
 # Stub Symbol Manifest
 
-This table lists every symbol mutated by pickle-stubs-secure.
+This table lists every symbol mutated by Falcon stubs.
 
 | Module  | Qualname         | Stub Return | Hook Target (historical, unused in rev2) |
 |---------|------------------|-------------|------------------------------------------|
@@ -40,7 +40,7 @@ This table lists every symbol mutated by pickle-stubs-secure.
 
 ## Architecture (rev2)
 
-Rev2 architecture uses `cast(T, expr)` as escape hatch. No plugin hook. The audit CLI (`pickle_secure_cli/audit_cmd.py`) enumerates cast sites and enforces tag-based policy. The Hook Target column above is historical — kept for reference if a checker plugin is ever revived.
+Rev2 architecture uses `cast(T, expr)` as escape hatch. No plugin hook. The Falcon audit CLI enumerates cast sites and enforces tag-based policy. The Hook Target column above is historical — kept for reference if a checker plugin is ever revived.
 
 ## Notes
 

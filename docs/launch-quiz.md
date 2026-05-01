@@ -9,7 +9,7 @@ This is a step-by-step validation you can run in a fresh project folder.
 
 ## Quiz
 
-1. `pip install pickle-stubs-secure`
+1. Install Falcon: `pip install pickle-stubs-secure` (current compatibility package name)
 2. Create `pyproject.toml` with this content:
 
 ```toml

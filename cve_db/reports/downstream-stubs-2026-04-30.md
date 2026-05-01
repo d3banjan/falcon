@@ -17,7 +17,7 @@ This report maps the seeded pickle-backed third-party CVEs to surgical overlay s
 | CVE-2025-61765 | python-socketio | queue manager internal handlers | **Partial**. Stubbed internal manager handlers, but deployment trust of message queue remains out of type scope. |
 | CVE-2025-62373 | Pipecat | `LivekitFrameSerializer.deserialize` | **Stubbed**. |
 | CVE-2025-65213 | torch_musa | compare utilities | **Stubbed**. |
-| CVE-2026-26215 | manga-image-translator | FastAPI endpoints calling `pickle.loads` | **Source-only**. No stable consumer API stub; direct source call is caught by stdlib pickle stubs, auth/nonce weakness is out of scope. |
+| CVE-2026-26215 | manga-image-translator | FastAPI endpoints calling `pickle.loads` | **Source-only**. No stable consumer API stub; direct source call is caught by Falcon's stdlib pickle overlay, auth/nonce weakness is out of scope. |
 
 ## Additional current NVD hits observed during implementation
 
@@ -41,4 +41,3 @@ These appeared in NVD search results and should be triaged into JSONL before cla
 ## Limits
 
 These stubs block unsafe returned-value use. They do not prove that attacker-controlled bytes cannot reach deserialization. That stronger claim requires the future `TrustedBytes` / `TrustedPath` proof family.
-

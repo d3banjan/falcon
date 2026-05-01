@@ -141,7 +141,7 @@ def generate_report(results_dir: str, test_file: str) -> str:
     ]
     
     tools = [
-        ("pickle-stubs-secure (mypy)", mypy_metrics),
+        ("Falcon stubs (mypy)", mypy_metrics),
         ("Bandit", bandit_metrics),
         ("Semgrep", semgrep_metrics),
         ("Ruff", ruff_metrics),
@@ -182,7 +182,7 @@ def generate_report(results_dir: str, test_file: str) -> str:
         "ANALYSIS SUMMARY",
         "=" * 80,
         "",
-        "pickle-stubs-secure (mypy):",
+        "Falcon stubs (mypy):",
         f"  - Type-based detection with {mypy_metrics['recall']:.1f}% recall",
         f"  - Minimal false positives ({mypy_metrics['false_positive_rate']:.1f}%)",
         "  - Integrates with existing type checking workflow",
@@ -206,7 +206,7 @@ def generate_report(results_dir: str, test_file: str) -> str:
         "CONCLUSION",
         "=" * 80,
         "",
-        "pickle-stubs-secure demonstrates superior detection coverage with minimal",
+        "Falcon demonstrates superior detection coverage with minimal",
         "false positives by leveraging the Python type system. The approach catches",
         "sophisticated attack patterns (gadget chains, dynamic dispatch) that",
         "pattern-based tools miss, while integrating seamlessly with existing",

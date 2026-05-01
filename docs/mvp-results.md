@@ -35,6 +35,7 @@ Falcon is strongest when a vulnerability can be expressed as a typed source-to-s
 ## Reproduce locally
 
 ```bash
+# Current compatibility package name for Falcon.
 pip install pickle-stubs-secure mypy pyright
 pickle-secure init --profile=strict --write-precommit
 mypy --strict .

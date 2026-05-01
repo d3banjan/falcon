@@ -1,7 +1,7 @@
 """Test fixtures for comparing security tools detection rates.
 
 This module contains intentionally vulnerable code patterns to test security tools:
-- pickle-stubs-secure (type-based detection)
+- Falcon stubs (type-based detection)
 - Bandit (pattern-based AST analysis)
 - Semgrep (pattern matching with custom rules)
 - Ruff (linter-based detection)

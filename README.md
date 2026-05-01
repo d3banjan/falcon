@@ -1,4 +1,4 @@
-# Falcon / pickle-stubs-secure
+# Falcon
 
 [![CI](https://github.com/d3banjan/falcon/actions/workflows/ci.yml/badge.svg)](https://github.com/d3banjan/falcon/actions/workflows/ci.yml)
 [![Pages](https://github.com/d3banjan/falcon/actions/workflows/pages.yml/badge.svg)](https://github.com/d3banjan/falcon/actions/workflows/pages.yml)
@@ -62,6 +62,7 @@ See [cve_db/reports/osv-deserialization-candidates-2026-05-01.md](cve_db/reports
 ## Install
 
 ```bash
+# Install Falcon. The current PyPI package name is a compatibility name.
 pip install pickle-stubs-secure
 ```
 
@@ -85,15 +86,15 @@ pickle-secure audit .
 
 ## Repository Layout
 
-- `src/pickle_stubs_secure/` - runtime package and CLI.
+- `src/pickle_stubs_secure/` - runtime package and CLI; this is Falcon's current compatibility import path.
 - `stubs/` - canonical checker overlay used by `mypy_path` / `stubPath`.
-- `pickle-stubs/` - packaged stub copy shipped in the wheel.
+- packaged stub distribution tree - wheel copy of the Falcon stubs; treat this as a packaging implementation detail.
 - `cve_db/` - machine-readable CVE evidence and coverage reports.
 - `docs/` - GitHub Pages microsite source.
 - `lean/` - separate formal model work.
 - `tests/` - runtime, checker, CLI, CVE, and feature tests.
 
-The duplicate-looking `stubs/` and `pickle-stubs/` trees are intentional for now: one is the canonical local overlay, the other is the packaged distribution copy.
+The duplicate-looking local and packaged stub trees are intentional for now: one is the canonical local overlay, the other is the packaged distribution copy.
 
 ## Formal Method Boundary
 

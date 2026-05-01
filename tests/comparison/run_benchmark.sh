@@ -18,8 +18,8 @@ echo "Test file: $TEST_FILE"
 echo "Results directory: $RESULTS_DIR"
 echo ""
 
-# Tool 1: pickle-stubs-secure (mypy type checking)
-echo "1. pickle-stubs-secure (mypy --strict)"
+# Tool 1: Falcon stubs (mypy type checking)
+echo "1. Falcon stubs (mypy --strict)"
 echo "   Running: uv run mypy --strict $TEST_FILE"
 SECONDS=0
 if uv run mypy --strict "$TEST_FILE" > "$RESULTS_DIR/mypy_output.txt" 2>&1; then
@@ -84,7 +84,7 @@ echo ""
 echo "=== Benchmark Summary ==="
 echo "Tool                                | Status       | Time"
 echo "------------------------------------|--------------|--------"
-printf "%-35s | %-12s | %ds\n" "pickle-stubs-secure (mypy)" "$MYPY_STATUS" "$MYPY_TIME"
+printf "%-35s | %-12s | %ds\n" "Falcon stubs (mypy)" "$MYPY_STATUS" "$MYPY_TIME"
 printf "%-35s | %-12s | %ds\n" "Bandit" "$BANDIT_STATUS" "$BANDIT_TIME"
 printf "%-35s | %-12s | %ds\n" "Semgrep" "$SEMGREP_STATUS" "$SEMGREP_TIME"
 printf "%-35s | %-12s | %ds\n" "Ruff" "$RUFF_STATUS" "$RUFF_TIME"

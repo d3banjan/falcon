@@ -13,7 +13,7 @@ def main() -> int:
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
         prog="pickle-secure",
-        description="Audit and configure pickle-stubs-secure cast-escape sites",
+        description="Audit and configure Falcon cast-escape sites",
     )
     parser.add_argument(
         "--version",

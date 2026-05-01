@@ -19,10 +19,10 @@ They're equivalent under our type model. `cast` is native, AST-level, checker-ag
 
 ### 2. PEP 561 does NOT shadow stdlib in mypy
 
-Bundled typeshed always wins for stdlib modules such as `pickle`. Workaround: user must add `mypy_path = [".../stubs"]` to `pyproject.toml`. `pickle-secure init` writes this. The repo keeps two stub trees:
+Bundled typeshed always wins for stdlib modules such as `pickle`. Workaround: user must add `mypy_path = [".../stubs"]` to `pyproject.toml`. `pickle-secure init` writes this. The repo keeps two Falcon stub trees:
 
 - `stubs/` is the canonical checker overlay.
-- `pickle-stubs/` is the packaged distribution copy.
+- the packaged stub copy is shipped in the wheel as a compatibility packaging detail.
 
 ### 3. Lean is a model of the method
 
@@ -43,9 +43,9 @@ diagnostic or marks affected calls as `Unsafe[Any]` / trusted-input-gated.
 
 ## Package layout
 
-- `src/pickle_stubs_secure/` — runtime + CLI source
+- `src/pickle_stubs_secure/` — runtime + CLI source; Falcon's current compatibility import path
 - `stubs/` — canonical checker overlay
-- `pickle-stubs/` — packaged stub copy
+- packaged stubs — distribution copy used by the wheel
 - `cve_db/` — CVE evidence records and coverage reports
 - `docs/` — GitHub Pages source
 - `tests/` — comprehensive test suite
