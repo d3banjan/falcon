@@ -46,8 +46,10 @@ See `cve_db/reports/downstream-stubs-2026-04-30.md` for current verdicts.
 
 ## Current coverage number
 
-As of 2026-05-01, the microsite evidence set contains 26 Python ecosystem CVEs involving pickle-backed deserialization or closely related pickle-family sinks.
+As of 2026-05-01, the microsite triaged evidence set contains 26 Python ecosystem CVEs involving pickle-backed deserialization or closely related pickle-family sinks.
 
-Falcon's current method catches or partially catches 24 / 26 (92%) of that set at the source or sink-family level. The stricter implemented-stub number is 16 / 26 (62%): these are CVEs where Falcon already has a sink-family, package-level, or conditional API stub rather than relying only on type-checking the vulnerable project's source.
+Falcon's current method catches or partially catches 24 / 26 (92%) of that triaged set at the source or sink-family level. The stricter implemented-stub number is 16 / 26 (62%): these are CVEs where Falcon already has a sink-family, package-level, or conditional API stub rather than relying only on type-checking the vulnerable project's source.
+
+This is not the final universe. The OSV PyPI candidate collector found 182 broad keyword candidates on 2026-05-01. Those candidates are queued for triage and include duplicates, analyzer-bypass advisories, GHSA-only records, malicious-package records, and out-of-scope issues.
 
 See [Coverage Analysis](coverage-analysis.md) for the per-CVE matrix and the CWE boundary.

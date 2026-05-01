@@ -9,7 +9,9 @@ title: Coverage Analysis
 
 Last checked: 2026-05-01.
 
-This page measures Falcon against a current evidence set of Python ecosystem CVEs where the relevant exploit path involves `pickle`, `_pickle`, `shelve`, `cloudpickle`, `jsonpickle`, pickle fallback behavior, or package APIs that wrap those sinks.
+This page measures Falcon against the currently triaged evidence set of Python ecosystem CVEs where the relevant exploit path involves `pickle`, `_pickle`, `shelve`, `cloudpickle`, `jsonpickle`, pickle fallback behavior, or package APIs that wrap those sinks.
+
+This is not yet an exhaustive count of every Python ecosystem advisory matching those terms. The reproducible candidate collector now queries OSV's public PyPI vulnerability dump and found 182 broad deserialization candidates on 2026-05-01. Those candidates still need human triage to remove duplicates, analyzer-bypass advisories, malicious-package records, disputed records, non-pickle substring matches, and issues outside Falcon's source-to-sink type model.
 
 This is not a count of all CPython CVEs. CPython memory safety, audit-hook, subprocess, import, TLS, path traversal, authorization, and debugger CVEs are outside Falcon unless the vulnerable branch is a typed deserialization source-to-sink flow.
 
@@ -17,13 +19,14 @@ This is not a count of all CPython CVEs. CPython memory safety, audit-hook, subp
 
 | Metric | Count |
 |---|---:|
-| Evidence-set CVEs reviewed | 26 |
+| Triaged evidence-set CVEs reviewed | 26 |
+| OSV PyPI keyword candidates awaiting triage | 182 |
 | Currently type-catchable by Falcon's method | 24 / 26 (92%) |
 | Implemented as sink or consumer-facing target stubs | 16 / 26 (62%) |
 | Missing because sink family is not stubbed yet | 0 / 26 (0%) |
 | Out of scope for this method | 2 / 26 (8%) |
 
-The 24 / 26 number includes direct source catches: if the vulnerable project source is type-checked with Falcon's stdlib, `cloudpickle`, or `jsonpickle` stubs, deserialization calls become `Unsafe[Any]` and cannot silently flow into trusted typed values. The stricter 16 / 26 number counts CVEs with an implemented sink-family, package-level, or conditional API stub. Some of those still need exact wrapper import confirmation before they should be called production-ready.
+The 24 / 26 number is only over the triaged evidence set. It includes direct source catches: if the vulnerable project source is type-checked with Falcon's stdlib, `cloudpickle`, or `jsonpickle` stubs, deserialization calls become `Unsafe[Any]` and cannot silently flow into trusted typed values. The stricter 16 / 26 number counts CVEs with an implemented sink-family, package-level, or conditional API stub. Some of those still need exact wrapper import confirmation before they should be called production-ready.
 
 ## CWE Coverage
 

@@ -10,3 +10,4 @@ build/
 docs/.bundle/
 docs/_site/
 docs/vendor/
+cve_db/generated/
