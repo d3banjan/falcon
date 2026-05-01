@@ -38,6 +38,6 @@ def test_pyright_detects_cve_wrapper_stubs() -> None:
     assert CVE_FIXTURE.exists(), f"Fixture not found: {CVE_FIXTURE}"
     rc, output = pyright_check(CVE_FIXTURE)
     assert rc != 0, f"Expected pyright failure but got exit 0. Output:\n{output}"
-    assert output.count("error:") >= 23 and output.count("Unsafe[") >= 23, (
+    assert output.count("error:") >= 24 and output.count("Unsafe[") >= 24, (
         f"Expected broad Unsafe[Any] coverage in pyright output but got:\n{output}"
     )

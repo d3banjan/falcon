@@ -27,7 +27,7 @@ This is not a count of all CPython CVEs. CPython memory safety, audit-hook, subp
 | Rows with sink-family or consumer-facing wrapper stubs | 16 / 26 (62%) |
 | Missing because sink family is not stubbed yet | 0 / 26 (0%) |
 | Out of scope for this method | 2 / 26 (8%) |
-| Additional OSV-promoted adjacent sink rows | 10 |
+| Additional OSV-promoted adjacent sink rows | 11 |
 
 The 24 / 26 number is only over the triaged evidence set. It includes direct source catches: if the vulnerable project source is type-checked with Falcon's stdlib, `cloudpickle`, or `jsonpickle` stubs, deserialization calls become `Unsafe[Any]` and cannot silently flow into trusted typed values. This is source-or-sink-family classification coverage, not proof that the corresponding load-time executions are prevented. The stricter 16 / 26 number counts rows with an implemented sink-family, package-level, or conditional API stub. Several of those rows still describe execution during load and therefore remain outside Falcon's current prevention claim.
 
@@ -51,7 +51,7 @@ The first-pass OSV bucket report is a triage aid, not a final denominator. It se
 | Public wrapper around pickle | Implemented for selected packages | LangChain FAISS, Kedro `ShelveStore`, LlamaIndex `JsonPickleSerializer`, pyfory, Pipecat, torch_musa, PyTorch. |
 | Internal service deserialization | Partial | SocketIO queues, LeRobot gRPC, SGLang ZMQ, Tendenci reports. Falcon can catch source code or return flow, but not deployment trust. |
 | Alternate pickle-family libraries | Implemented at sink-family level | `cloudpickle.load(s)` and `jsonpickle.decode` now return `Unsafe[Any]`. |
-| Adjacent Python serialization sinks | Implemented at sink-family or selected wrapper level | `dill.load(s)`, `joblib.load`, `marshal.load(s)`, pandas `read_pickle`, skops `Card.get_model`, and unsafe YAML loaders now return `Unsafe[Any]`. This quarantines returned values; it does not prove safe invocation of the loader itself. |
+| Adjacent Python serialization sinks | Implemented at sink-family or selected wrapper level | `dill.load(s)`, `joblib.load`, `marshal.load(s)`, pandas `read_pickle`, skops `Card.get_model`, Embedchain `OpenAPILoader.load_data`, and unsafe YAML loaders now return `Unsafe[Any]`. This quarantines returned values; it does not prove safe invocation of the loader itself. |
 | Analyzer misclassification | Out of scope | Fickling CVEs are about a security analyzer's verdict, not an application value flowing from deserialization. |
 
 ## Per-CVE Verdicts
@@ -91,7 +91,7 @@ See [CVE Triage](cve-triage.md) for code locations, mypy/pyright validation stat
 
 The next high-leverage scope is not packaging. It is wrapper precision around the newly stubbed alternate serialization libraries:
 
-- package wrappers around those sinks for Embedchain, vLLM weight loading, InvokeAI model loading, Horovod cloudpickle decoding, and source-confirmed YAML/cloudpickle rows where the Python API is stable;
+- package wrappers around those sinks for vLLM weight loading, InvokeAI model loading, Horovod cloudpickle decoding, and source-confirmed YAML/cloudpickle rows where the Python API is stable;
 - normalization of the remaining 221 OSV candidates into catchable, partial, out-of-scope, duplicate, malicious-package, and false-positive buckets.
 
-The `cloudpickle`, `jsonpickle`, `dill`, `joblib`, `marshal`, pandas pickle helper, skops, and unsafe YAML records are now type-catchable at the sink-family or selected-wrapper level. Wrapper stubs would make consumer-facing diagnostics more precise. This still does not prove load-time RCE prevention; that requires the future `TrustedBytes` / `TrustedPath` proof family.
+The `cloudpickle`, `jsonpickle`, `dill`, `joblib`, `marshal`, pandas pickle helper, skops, Embedchain, and unsafe YAML records are now type-catchable at the sink-family or selected-wrapper level. Wrapper stubs would make consumer-facing diagnostics more precise. This still does not prove load-time RCE prevention; that requires the future `TrustedBytes` / `TrustedPath` proof family.

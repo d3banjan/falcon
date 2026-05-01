@@ -1,0 +1,1 @@
+"""Strict embedchain package stubs."""

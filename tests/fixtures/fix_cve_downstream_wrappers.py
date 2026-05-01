@@ -15,6 +15,7 @@ import stepfun_ai
 import torch
 import yaml
 import pandas as pd
+from embedchain.loaders.openapi import OpenAPILoader
 from kedro.io import ShelveStore
 from langchain.vectorstores.faiss import FAISS as LegacyFAISS
 from langchain_community.vectorstores.faiss import FAISS
@@ -38,6 +39,7 @@ yaml_value: dict[str, Any] = yaml.load("!!python/object/apply:os.system ['id']")
 pandas_model: dict[str, Any] = pd.read_pickle("frame.pkl")
 pandas_io_model: dict[str, Any] = pandas_io_pickle.read_pickle("frame.pkl")
 skops_model: dict[str, Any] = Card("model.skops").get_model()
+embedchain_docs: list[dict[str, Any]] = OpenAPILoader().load_data("openapi.yaml")
 faiss_index: dict[str, Any] = FAISS.deserialize_from_bytes(payload)
 legacy_faiss_index: dict[str, Any] = LegacyFAISS.deserialize_from_bytes(payload)
 legacy_faiss_local: dict[str, Any] = LegacyFAISS.load_local("index")

@@ -32,12 +32,12 @@ route, file path, or internal helper.
 These are wrapper surfaces worth considering, but still require cautious
 documentation because their advisories are primarily load-time issues. The
 refreshed report narrows this queue: Embedchain remains the strongest current
-wrapper candidate; `lmdeploy` drops out of the high-confidence list; vLLM,
+wrapper candidate and is now implemented; `lmdeploy` drops out of the high-confidence list; vLLM,
 InvokeAI, and Horovod are promoted only as cautious diagnostic-wrapper targets.
 
 | Package | Advisory | Candidate API | Sink | Falcon status |
 |---|---|---|---|---|
-| Embedchain | CVE-2024-23731 / GHSA-rhhj-5436-95vf | `embedchain.loaders.openapi.OpenAPILoader.load_data` | unsafe PyYAML | Candidate target stub plus `trusted-input-debt`. |
+| Embedchain | CVE-2024-23731 / GHSA-rhhj-5436-95vf | `embedchain.loaders.openapi.OpenAPILoader.load_data` | unsafe PyYAML | Implemented target stub plus `trusted-input-debt`. |
 | vLLM | CVE-2025-24357 family | `vllm.model_executor.weight_utils.hf_model_weights_iterator` | `torch.load` | Medium-priority candidate target stub for diagnostics; not a prevention claim. |
 | InvokeAI | CVE-2024-12029 / GHSA-g56c-68pp-6747 | public route `/api/v2/models/install`; internal helpers `invokeai.app.services.model_load.model_load_default.torch_load_file` and `invokeai.backend.model_manager.probe._scan_model` | `torch.load` | Medium-low candidate target stub; prevention needs `TrustedPath`. |
 | Horovod | CVE-2024-10190 family | `horovod.runner.common.util.codec.loads_base64`, reached via `ElasticRendezvousHandler._put_value` | `cloudpickle.loads` | Medium-low candidate target stub; affected-version/source confirmation still matters. |

@@ -12,7 +12,7 @@ Result after expanding keywords beyond pickle:
 |---|---:|
 | Broad OSV PyPI candidates | 221 |
 | Prior broad candidates with pickle-focused profile | 182 |
-| Human-promoted rows added in `libraries/serialization-sinks.jsonl` | 10 |
+| Human-promoted rows added in `libraries/serialization-sinks.jsonl` | 11 |
 
 Top matched terms:
 
@@ -40,6 +40,7 @@ Immediate sink-family actions completed:
 | `joblib.load` | Added | Validated in checker fixture |
 | `marshal.load`, `marshal.loads` | Added | Validated in checker fixture |
 | `yaml.load`, `yaml.unsafe_load`, `yaml.full_load` | Added | Validated in checker fixture |
+| `embedchain.loaders.openapi.OpenAPILoader.load_data` | Added | Validated in checker fixture |
 
 Interpretation:
 
@@ -49,5 +50,5 @@ Next normalization pass:
 
 1. Split analyzer-bypass records such as Picklescan/Fickling into `out-of-scope`.
 2. Split malicious package records into a separate supply-chain bucket.
-3. Promote package-wrapper rows for remaining scikit-learn joblib helpers, InvokeAI, vLLM torch loaders, Feast/PyYAML, and marshal-using packages where source locations are available.
+3. Promote package-wrapper rows for InvokeAI, vLLM torch loaders, Horovod, Feast/PyYAML, and marshal-using packages where source locations are available.
 4. Keep raw generated files ignored under `cve_db/generated/`.
