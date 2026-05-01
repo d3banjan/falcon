@@ -32,6 +32,15 @@ The `lean/` directory contains a model of the source-to-sink method. It is not a
 
 `disallow_any_*` family + ruff rules + audit CLI gate. Residual: monkey-patching (out of scope), unintended `cast` from `Any` (killable via `disallow_any_explicit`).
 
+### 5. Future semantic-policy layer
+
+Literal keyword hazards such as `allow_pickle=True` can often be represented
+with overloads. Inherited or injected configuration, such as `safe = False` on a
+loader subclass or `super().__init__(safe=False)` hidden in an MRO chain, needs a
+semantic rule. The likely home is a checker plugin or `pickle-secure audit`
+extension that inspects class definitions and wrapper forwarding, then reports a
+diagnostic or marks affected calls as `Unsafe[Any]` / trusted-input-gated.
+
 ## Package layout
 
 - `src/pickle_stubs_secure/` — runtime + CLI source
