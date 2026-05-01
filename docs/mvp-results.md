@@ -3,8 +3,6 @@ layout: page
 title: MVP Results
 ---
 
-# MVP Results
-
 {% include research_status.html %}
 
 Execution model:

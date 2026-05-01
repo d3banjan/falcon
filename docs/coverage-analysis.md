@@ -3,8 +3,6 @@ layout: page
 title: Coverage Analysis
 ---
 
-# Coverage Analysis
-
 {% include research_status.html %}
 
 Last checked: 2026-05-01.

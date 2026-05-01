@@ -3,8 +3,6 @@ layout: page
 title: CVEs and CWEs
 ---
 
-# CVEs and CWEs
-
 {% include research_status.html %}
 
 The CVE database asks one concrete question:
