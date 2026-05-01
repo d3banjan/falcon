@@ -9,6 +9,7 @@ import jsonpickle
 import marshal
 import numpy as np
 import pyfory
+from skops.card import Card
 import socketio
 import stepfun_ai
 import torch
@@ -36,6 +37,7 @@ numpy_model: dict[str, Any] = np.load("model.npy", allow_pickle=True)
 yaml_value: dict[str, Any] = yaml.load("!!python/object/apply:os.system ['id']")
 pandas_model: dict[str, Any] = pd.read_pickle("frame.pkl")
 pandas_io_model: dict[str, Any] = pandas_io_pickle.read_pickle("frame.pkl")
+skops_model: dict[str, Any] = Card("model.skops").get_model()
 faiss_index: dict[str, Any] = FAISS.deserialize_from_bytes(payload)
 legacy_faiss_index: dict[str, Any] = LegacyFAISS.deserialize_from_bytes(payload)
 legacy_faiss_local: dict[str, Any] = LegacyFAISS.load_local("index")

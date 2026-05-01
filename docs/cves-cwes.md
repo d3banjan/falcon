@@ -37,6 +37,7 @@ Falcon currently ships the first claim. The second requires future `TrustedBytes
 - pyfory pickle fallback surfaces
 - python-socketio queue deserialization internals
 - Pipecat LiveKit frame serializer
+- skops `Card.get_model`
 - torch_musa compare utilities
 - PyTorch `torch.load`
 
@@ -44,7 +45,7 @@ See `cve_db/reports/downstream-stubs-2026-04-30.md` for current verdicts.
 
 ## Current coverage number
 
-As of 2026-05-01, the microsite triaged evidence set contains 26 Python ecosystem CVEs involving pickle-backed deserialization or closely related pickle-family sinks. A second promoted set now tracks 10 adjacent serialization-sink rows from OSV for YAML, dill, joblib, marshal, and torch-load model artifacts.
+As of 2026-05-01, the microsite triaged evidence set contains 26 Python ecosystem CVEs involving pickle-backed deserialization or closely related pickle-family sinks. A second promoted set now tracks 10 adjacent serialization-sink rows from OSV for YAML, dill, joblib, marshal, pandas pickle helpers, skops, and torch-load model artifacts.
 
 Falcon's current method catches or partially catches 24 / 26 (92%) of that triaged set at the source or sink-family level. The stricter implemented-stub number is 16 / 26 (62%): these are CVEs where Falcon already has a sink-family, package-level, or conditional API stub rather than relying only on type-checking the vulnerable project's source.
 

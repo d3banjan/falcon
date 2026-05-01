@@ -13,6 +13,7 @@ This table lists every symbol mutated by pickle-stubs-secure.
 | numpy   | load             | Any or Unsafe[Any] | get_function_hook("numpy.load") (unsafe when allow_pickle=True) |
 | pandas | read_pickle | Unsafe[Any] | wrapper stub |
 | pandas.io.pickle | read_pickle | Unsafe[Any] | wrapper stub |
+| skops.card | Card.get_model | Unsafe[Any] | CVE-backed joblib wrapper stub |
 | langchain_community.vectorstores.faiss | FAISS.deserialize_from_bytes | Unsafe[Any] | CVE wrapper stub |
 | langchain_community.vectorstores.faiss | FAISS.load_local | Unsafe[Any] | CVE wrapper stub |
 | langchain.vectorstores.faiss | FAISS.deserialize_from_bytes | Unsafe[Any] | CVE wrapper stub |

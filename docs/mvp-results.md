@@ -16,7 +16,7 @@ The type-checker output is the proof artifact users can run in CI.
 
 ## Current evidence-set result
 
-Falcon currently catches or partially catches 24 / 26 (92%) reviewed Python ecosystem pickle-backed CVEs at the source or sink-family level. Of those, 16 / 26 (62%) have implemented sink-family, consumer-facing package, or conditional API stubs. The adjacent sink expansion adds 10 OSV-promoted rows for YAML, dill, joblib, marshal, pandas pickle helpers, and torch-load model artifacts.
+Falcon currently catches or partially catches 24 / 26 (92%) reviewed Python ecosystem pickle-backed CVEs at the source or sink-family level. Of those, 16 / 26 (62%) have implemented sink-family, consumer-facing package, or conditional API stubs. The adjacent sink expansion adds 10 OSV-promoted rows for YAML, dill, joblib, marshal, pandas pickle helpers, skops model-card loading, and torch-load model artifacts.
 
 The remaining work is wrapper precision, deeper fixtures for alternate method spellings, and source-shaped fixtures for direct endpoint/internal pickle calls. Packaging is still not the launch bar.
 

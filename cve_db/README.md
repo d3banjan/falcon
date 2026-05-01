@@ -5,7 +5,7 @@ Machine-readable evidence records for CVE-driven stub coverage.
 Start with:
 
 - `libraries/pickle.jsonl` — seed records for Python pickle-backed deserialization CVEs.
-- `libraries/serialization-sinks.jsonl` — OSV-promoted rows for adjacent sinks such as YAML, dill, joblib, marshal, pandas pickle helpers, and torch-load model artifacts.
+- `libraries/serialization-sinks.jsonl` — OSV-promoted rows for adjacent sinks such as YAML, dill, joblib, marshal, pandas pickle helpers, skops model-card loading, and torch-load model artifacts.
 - `reports/pickle-2026-04-30.md` — first run against the implemented falcon pickle/shelve stubs.
 - `reports/downstream-stubs-2026-04-30.md` — surgical third-party wrapper stub coverage.
 - `reports/osv-deserialization-candidates-2026-05-01.md` — latest reproducible OSV candidate run and promoted sink-family rows.

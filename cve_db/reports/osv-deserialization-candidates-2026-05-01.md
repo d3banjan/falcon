@@ -49,5 +49,5 @@ Next normalization pass:
 
 1. Split analyzer-bypass records such as Picklescan/Fickling into `out-of-scope`.
 2. Split malicious package records into a separate supply-chain bucket.
-3. Promote package-wrapper rows for pandas, scikit-learn/skops, InvokeAI, vLLM torch loaders, Feast/PyYAML, and marshal-using packages where source locations are available.
+3. Promote package-wrapper rows for remaining scikit-learn joblib helpers, InvokeAI, vLLM torch loaders, Feast/PyYAML, and marshal-using packages where source locations are available.
 4. Keep raw generated files ignored under `cve_db/generated/`.

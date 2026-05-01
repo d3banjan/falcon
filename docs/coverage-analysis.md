@@ -51,7 +51,7 @@ The first-pass OSV bucket report is a triage aid, not a final denominator. It se
 | Public wrapper around pickle | Implemented for selected packages | LangChain FAISS, Kedro `ShelveStore`, LlamaIndex `JsonPickleSerializer`, pyfory, Pipecat, torch_musa, PyTorch. |
 | Internal service deserialization | Partial | SocketIO queues, LeRobot gRPC, SGLang ZMQ, Tendenci reports. Falcon can catch source code or return flow, but not deployment trust. |
 | Alternate pickle-family libraries | Implemented at sink-family level | `cloudpickle.load(s)` and `jsonpickle.decode` now return `Unsafe[Any]`. |
-| Adjacent Python serialization sinks | Implemented at sink-family level | `dill.load(s)`, `joblib.load`, `marshal.load(s)`, pandas `read_pickle`, and unsafe YAML loaders now return `Unsafe[Any]`. |
+| Adjacent Python serialization sinks | Implemented at sink-family or selected wrapper level | `dill.load(s)`, `joblib.load`, `marshal.load(s)`, pandas `read_pickle`, skops `Card.get_model`, and unsafe YAML loaders now return `Unsafe[Any]`. |
 | Analyzer misclassification | Out of scope | Fickling CVEs are about a security analyzer's verdict, not an application value flowing from deserialization. |
 
 ## Per-CVE Verdicts
@@ -91,7 +91,7 @@ See [CVE Triage](cve-triage.md) for code locations, mypy/pyright validation stat
 
 The next high-leverage scope is not packaging. It is wrapper precision around the newly stubbed alternate serialization libraries:
 
-- package wrappers around those sinks for scikit-learn/skops, InvokeAI, vLLM, Feast/PyYAML, Horovod, Fugue, Upsonic, and ai-flow;
+- package wrappers around those sinks for remaining scikit-learn joblib helpers, InvokeAI, vLLM, Feast/PyYAML, Horovod, Fugue, Upsonic, and ai-flow;
 - normalization of the remaining 221 OSV candidates into catchable, partial, out-of-scope, duplicate, malicious-package, and false-positive buckets.
 
 The `cloudpickle`, `jsonpickle`, `dill`, `joblib`, `marshal`, and unsafe YAML records are now type-catchable at the sink-family level. Wrapper stubs would make consumer-facing diagnostics more precise. This still does not prove load-time RCE prevention; that requires the future `TrustedBytes` / `TrustedPath` proof family.
