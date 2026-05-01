@@ -34,7 +34,7 @@ Falcon does not claim that CPython, mypy, pyright, or every dependency is formal
 
 Many CVEs are not fixed everywhere at once. Projects pin old versions, vendors disagree about threat models, and some advisories are treated as "trusted input only." Falcon helps downstream application teams anyway: annotated stubs make unsafe deserialization APIs return `Unsafe[Any]`, and strict type-checking blocks unaudited use before deployment.
 
-Current triaged evidence-set coverage: Falcon catches or partially catches 24 / 26 (92%) reviewed Python ecosystem pickle-backed CVEs at the source or sink-family level. The stricter implemented stub number is 16 / 26 (62%). A reproducible OSV PyPI feed pass found 182 broad candidates awaiting triage. See [Coverage Analysis](coverage-analysis.md) for the per-CVE matrix and CWE boundary.
+Current triaged evidence-set coverage: Falcon catches or partially catches 24 / 26 (92%) reviewed Python ecosystem pickle-backed CVEs at the source or sink-family level. The stricter implemented stub number is 16 / 26 (62%). A reproducible OSV PyPI feed pass found 221 broad candidates; first-pass triage marks 31 catchable, 37 partial, and 49 needing source confirmation, with the rest excluded as duplicates, malicious packages, analyzer-policy records, or false positives. See [Coverage Analysis](coverage-analysis.md) for the per-CVE matrix and CWE boundary.
 
 ## Minimal working example
 
@@ -58,7 +58,7 @@ def reviewed_load(raw: bytes) -> dict[str, Any]:
     return cast(dict[str, Any], pickle.loads(raw))  # trust: migration reviewed inbound artifact
 ```
 
-`mypy`, `pyright`, and eventually `ty` all see the same core shape: an `Unsafe[Any]` value is being returned as trusted application data. The exact diagnostic wording differs, but CI fails until the code is changed or explicitly reviewed with `cast(...)  # trust:`.
+`mypy`, `pyright`, and `ty` all see the same core shape: an `Unsafe[Any]` value is being returned as trusted application data. The exact diagnostic wording differs, but CI fails until the code is changed or explicitly reviewed with `cast(...)  # trust:`.
 
 ## What Falcon does
 

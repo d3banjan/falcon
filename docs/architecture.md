@@ -9,7 +9,7 @@ title: Architecture
 
 Python security checker MVP. Stub files (`.pyi`) annotate dangerous APIs with `Unsafe[T]` return types. Strict-mode type-check = security gate. Escape hatch = native `typing.cast` plus an auditable `# trust:` comment.
 
-MVP target: pickle-backed deserialization. The core stdlib surface is `pickle`, `_pickle`, and `shelve`; the first downstream extensions are CVE-backed wrapper APIs such as `numpy.load(..., allow_pickle=True)` and FAISS deserializers.
+MVP target: Python deserialization flows that can be expressed as typed unsafe sources. The core stdlib surface is `pickle`, `_pickle`, `shelve`, and `marshal`; downstream extensions include CVE-backed wrapper APIs such as `numpy.load(..., allow_pickle=True)`, FAISS deserializers, `torch.load`, `dill`, `joblib`, and unsafe YAML loaders.
 
 ## Key decisions
 
@@ -45,4 +45,4 @@ The `lean/` directory contains a model of the source-to-sink method. It is not a
 ## Known limitations
 
 - `disjoint_base` dropped from `_pickle.pyi` (mypy 1.13 typing_extensions doesn't ship it). Restore when available.
-- `ty` remains future-facing in CI until its production story stabilizes.
+- `ty` is configured with Falcon's overlay path; current compatibility is tracked in the checker matrix.

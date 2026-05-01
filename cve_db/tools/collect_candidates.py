@@ -28,11 +28,23 @@ DEFAULT_KEYWORDS = (
     "pickle.loads",
     "unpickle",
     "cloudpickle",
+    "cloudpickle.load",
+    "cloudpickle.loads",
     "jsonpickle",
     "dill",
+    "dill.load",
+    "dill.loads",
+    "joblib",
     "joblib.load",
+    "marshal",
+    "marshal.load",
+    "marshal.loads",
     "shelve",
     "allow_pickle",
+    "read_pickle",
+    "torch.load",
+    "yaml.load",
+    "unsafe_load",
 )
 
 

@@ -11,6 +11,8 @@ This table lists every symbol mutated by pickle-stubs-secure.
 | _pickle | load             | Unsafe[Any] | get_function_hook("_pickle.load")        |
 | _pickle | Unpickler.load   | Unsafe[Any] | get_method_hook("_pickle.Unpickler.load")|
 | numpy   | load             | Any or Unsafe[Any] | get_function_hook("numpy.load") (unsafe when allow_pickle=True) |
+| pandas | read_pickle | Unsafe[Any] | wrapper stub |
+| pandas.io.pickle | read_pickle | Unsafe[Any] | wrapper stub |
 | langchain_community.vectorstores.faiss | FAISS.deserialize_from_bytes | Unsafe[Any] | CVE wrapper stub |
 | langchain_community.vectorstores.faiss | FAISS.load_local | Unsafe[Any] | CVE wrapper stub |
 | langchain.vectorstores.faiss | FAISS.deserialize_from_bytes | Unsafe[Any] | CVE wrapper stub |
@@ -24,8 +26,16 @@ This table lists every symbol mutated by pickle-stubs-secure.
 | torch | load | Unsafe[Any] | CVE wrapper stub |
 | cloudpickle | load | Unsafe[Any] | CVE sink-family stub |
 | cloudpickle | loads | Unsafe[Any] | CVE sink-family stub |
+| dill | load | Unsafe[Any] | serialization sink-family stub |
+| dill | loads | Unsafe[Any] | serialization sink-family stub |
+| joblib | load | Unsafe[Any] | serialization sink-family stub |
 | jsonpickle | decode | Unsafe[Any] | CVE sink-family stub |
 | jsonpickle | loads | Unsafe[Any] | CVE sink-family stub |
+| marshal | load | Unsafe[Any] | serialization sink-family stub |
+| marshal | loads | Unsafe[Any] | serialization sink-family stub |
+| yaml | load | Unsafe[Any] | serialization sink-family stub |
+| yaml | unsafe_load | Unsafe[Any] | serialization sink-family stub |
+| yaml | full_load | Unsafe[Any] | serialization sink-family stub |
 
 ## Architecture (rev2)
 

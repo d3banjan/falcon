@@ -10,6 +10,7 @@ PROJECT_ROOT = Path(__file__).parent.parent
 
 MYPY_BIN = os.environ.get("MYPY_BIN", shutil.which("mypy") or "mypy")
 PYRIGHT_BIN = os.environ.get("PYRIGHT_BIN", shutil.which("pyright") or "pyright")
+TY_BIN = os.environ.get("TY_BIN", shutil.which("ty") or "ty")
 
 
 def mypy_check(fixture: Path) -> tuple[int, str]:
@@ -33,6 +34,20 @@ def pyright_check(fixture: Path) -> tuple[int, str]:
     """
     result = subprocess.run(
         [PYRIGHT_BIN, "--warnings", str(fixture)],
+        capture_output=True,
+        text=True,
+        cwd=str(PROJECT_ROOT),
+    )
+    return result.returncode, result.stdout + result.stderr
+
+
+def ty_check(fixture: Path) -> tuple[int, str]:
+    """Run ty on a fixture file.
+
+    Returns exit code and combined stdout/stderr.
+    """
+    result = subprocess.run(
+        [TY_BIN, "check", str(fixture)],
         capture_output=True,
         text=True,
         cwd=str(PROJECT_ROOT),

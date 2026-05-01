@@ -7,9 +7,9 @@ title: Coverage Analysis
 
 Last checked: 2026-05-01.
 
-This page measures Falcon against the currently triaged evidence set of Python ecosystem CVEs where the relevant exploit path involves `pickle`, `_pickle`, `shelve`, `cloudpickle`, `jsonpickle`, pickle fallback behavior, or package APIs that wrap those sinks.
+This page measures Falcon against the currently triaged evidence set of Python ecosystem CVEs where the relevant exploit path involves `pickle`, `_pickle`, `shelve`, `cloudpickle`, `jsonpickle`, `dill`, `joblib`, `marshal`, unsafe YAML loading, pickle fallback behavior, or package APIs that wrap those sinks.
 
-This is not yet an exhaustive count of every Python ecosystem advisory matching those terms. The reproducible candidate collector now queries OSV's public PyPI vulnerability dump and found 182 broad deserialization candidates on 2026-05-01. Those candidates still need human triage to remove duplicates, analyzer-bypass advisories, malicious-package records, disputed records, non-pickle substring matches, and issues outside Falcon's source-to-sink type model.
+This is not yet an exhaustive count of every Python ecosystem advisory matching those terms. The reproducible candidate collector now queries OSV's public PyPI vulnerability dump and found 221 broad deserialization candidates on 2026-05-01 after expanding beyond pickle-heavy keywords. Those candidates still need human triage to remove duplicates, analyzer-bypass advisories, malicious-package records, disputed records, substring matches, and issues outside Falcon's source-to-sink type model.
 
 This is not a count of all CPython CVEs. CPython memory safety, audit-hook, subprocess, import, TLS, path traversal, authorization, and debugger CVEs are outside Falcon unless the vulnerable branch is a typed deserialization source-to-sink flow.
 
@@ -18,13 +18,20 @@ This is not a count of all CPython CVEs. CPython memory safety, audit-hook, subp
 | Metric | Count |
 |---|---:|
 | Triaged evidence-set CVEs reviewed | 26 |
-| OSV PyPI keyword candidates awaiting triage | 182 |
+| OSV PyPI keyword candidates awaiting triage | 221 |
+| First-pass OSV catchable candidates | 31 / 221 (14%) |
+| First-pass OSV partial candidates | 37 / 221 (17%) |
+| First-pass OSV non-denominator candidates | 104 / 221 (47%) |
+| First-pass OSV needs source confirmation | 49 / 221 (22%) |
 | Currently type-catchable by Falcon's method | 24 / 26 (92%) |
 | Implemented as sink or consumer-facing target stubs | 16 / 26 (62%) |
 | Missing because sink family is not stubbed yet | 0 / 26 (0%) |
 | Out of scope for this method | 2 / 26 (8%) |
+| Additional OSV-promoted adjacent sink rows | 10 |
 
 The 24 / 26 number is only over the triaged evidence set. It includes direct source catches: if the vulnerable project source is type-checked with Falcon's stdlib, `cloudpickle`, or `jsonpickle` stubs, deserialization calls become `Unsafe[Any]` and cannot silently flow into trusted typed values. The stricter 16 / 26 number counts CVEs with an implemented sink-family, package-level, or conditional API stub. Some of those still need exact wrapper import confirmation before they should be called production-ready.
+
+The first-pass OSV bucket report is a triage aid, not a final denominator. It separates duplicates, malicious packages, analyzer-policy advisories, false positives, and records needing source confirmation before Falcon makes coverage claims over them.
 
 ## CWE Coverage
 
@@ -44,6 +51,7 @@ The 24 / 26 number is only over the triaged evidence set. It includes direct sou
 | Public wrapper around pickle | Implemented for selected packages | LangChain FAISS, Kedro `ShelveStore`, LlamaIndex `JsonPickleSerializer`, pyfory, Pipecat, torch_musa, PyTorch. |
 | Internal service deserialization | Partial | SocketIO queues, LeRobot gRPC, SGLang ZMQ, Tendenci reports. Falcon can catch source code or return flow, but not deployment trust. |
 | Alternate pickle-family libraries | Implemented at sink-family level | `cloudpickle.load(s)` and `jsonpickle.decode` now return `Unsafe[Any]`. |
+| Adjacent Python serialization sinks | Implemented at sink-family level | `dill.load(s)`, `joblib.load`, `marshal.load(s)`, pandas `read_pickle`, and unsafe YAML loaders now return `Unsafe[Any]`. |
 | Analyzer misclassification | Out of scope | Fickling CVEs are about a security analyzer's verdict, not an application value flowing from deserialization. |
 
 ## Per-CVE Verdicts
@@ -81,9 +89,9 @@ See [CVE Triage](cve-triage.md) for code locations, mypy/pyright validation stat
 
 ## What Would Increase Coverage Next
 
-The next high-leverage scope is not packaging. It is wrapper precision around the newly stubbed alternate pickle-family libraries:
+The next high-leverage scope is not packaging. It is wrapper precision around the newly stubbed alternate serialization libraries:
 
-- likely `dill.load`, `dill.loads`, and `joblib.load` as adjacent deserialization surfaces;
-- package wrappers around those sinks for Horovod, vLLM, Fugue, Upsonic, and ai-flow.
+- package wrappers around those sinks for scikit-learn/skops, InvokeAI, vLLM, Feast/PyYAML, Horovod, Fugue, Upsonic, and ai-flow;
+- normalization of the remaining 221 OSV candidates into catchable, partial, out-of-scope, duplicate, malicious-package, and false-positive buckets.
 
-The `cloudpickle` and `jsonpickle` records are now type-catchable at the sink-family level. Wrapper stubs would make consumer-facing diagnostics more precise. This still does not prove load-time RCE prevention; that requires the future `TrustedBytes` / `TrustedPath` proof family.
+The `cloudpickle`, `jsonpickle`, `dill`, `joblib`, `marshal`, and unsafe YAML records are now type-catchable at the sink-family level. Wrapper stubs would make consumer-facing diagnostics more precise. This still does not prove load-time RCE prevention; that requires the future `TrustedBytes` / `TrustedPath` proof family.

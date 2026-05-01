@@ -41,7 +41,7 @@ Core stdlib surfaces:
 - `pickle.load`, `pickle.loads`, `pickle.Unpickler.load`
 - `_pickle.load`, `_pickle.loads`, `_pickle.Unpickler.load`
 - `shelve` read paths: `__getitem__`, `get`, `values`, `items`
-- adjacent pickle-family sinks: `cloudpickle.load`, `cloudpickle.loads`, `jsonpickle.decode`, `jsonpickle.loads`
+- adjacent deserialization sinks: `cloudpickle.load`, `cloudpickle.loads`, `jsonpickle.decode`, `jsonpickle.loads`, `dill.load`, `dill.loads`, `joblib.load`, `marshal.load`, `marshal.loads`, `pandas.read_pickle`, `pandas.io.pickle.read_pickle`, `yaml.load`, `yaml.unsafe_load`, `yaml.full_load`
 
 CVE-backed downstream pilot surfaces:
 
@@ -57,6 +57,7 @@ CVE-backed downstream pilot surfaces:
 - cloudpickle/jsonpickle CVE sink-family stubs
 
 See [cve_db/reports/downstream-stubs-2026-04-30.md](cve_db/reports/downstream-stubs-2026-04-30.md) for the current CVE verdicts.
+See [cve_db/reports/osv-deserialization-candidates-2026-05-01.md](cve_db/reports/osv-deserialization-candidates-2026-05-01.md) for the expanded OSV candidate run.
 
 ## Install
 

@@ -36,6 +36,9 @@ classifiers = [
 dependencies = [
     "tomlkit>=0.11.0",
     "tomli>=1.2.0; python_version < '3.11'",
+    "ty>=0.0.33",
+    "mypy>=1.13.0",
+    "pyright>=1.1.409",
 ]
 
 [project.urls]
@@ -46,8 +49,6 @@ Documentation = "https://d3banjan.github.io/falcon/"
 
 [project.optional-dependencies]
 dev = [
-    "mypy>=1.13,<1.14",
-    "pyright",
     "pytest>=7.0",
     "ruff>=0.15.12",
     "bandit>=1.9.4",
@@ -85,10 +86,11 @@ stubPath = "stubs"
 typeCheckingMode = "strict"
 pythonVersion = "3.11"
 
+[tool.ty.environment]
+extra-paths = ["stubs"]
+
 [dependency-groups]
 dev = [
-    "mypy>=1.13,<1.14",
-    "pyright",
     "pytest>=7.0",
     "ruff>=0.15.12",
 ]
