@@ -32,6 +32,7 @@ from typing_extensions import Self
 from _pickle import Unpickler as Unpickler
 
 from _unsafe import Unsafe
+from pickle_stubs_secure.trust import TrustedBytes
 
 __all__ = [
     "PickleBuffer",
@@ -229,7 +230,7 @@ def load(
 ) -> Unsafe[Any]: ...
 
 def loads(
-    data: ReadableBuffer,
+    data: TrustedBytes,
     /,
     *,
     fix_imports: bool = True,

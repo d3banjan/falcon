@@ -25,11 +25,12 @@ This is not a count of all CPython CVEs. CPython memory safety, audit-hook, subp
 | First-pass OSV needs source confirmation | 49 / 221 (22%) |
 | Covered at source-or-sink-family classification level | 24 / 26 (92%) |
 | Rows with sink-family or consumer-facing wrapper stubs | 16 / 26 (62%) |
+| Real APIs with trusted-input call preconditions | 3 |
 | Missing because sink family is not stubbed yet | 0 / 26 (0%) |
 | Out of scope for this method | 2 / 26 (8%) |
 | Additional OSV-promoted adjacent sink rows | 11 |
 
-The 24 / 26 number is only over the triaged evidence set. It includes direct source catches: if the vulnerable project source is type-checked with Falcon's stdlib, `cloudpickle`, or `jsonpickle` stubs, deserialization calls become `Unsafe[Any]` and cannot silently flow into trusted typed values. This is source-or-sink-family classification coverage, not proof that the corresponding load-time executions are prevented. The stricter 16 / 26 number counts rows with an implemented sink-family, package-level, or conditional API stub. Several of those rows still describe execution during load and therefore remain outside Falcon's current prevention claim.
+The 24 / 26 number is only over the triaged evidence set. It includes direct source catches: if the vulnerable project source is type-checked with Falcon's stdlib, `cloudpickle`, or `jsonpickle` stubs, deserialization calls become `Unsafe[Any]` and cannot silently flow into trusted typed values. This is source-or-sink-family classification coverage, not proof that the corresponding load-time executions are prevented. The stricter 16 / 26 number counts rows with an implemented sink-family, package-level, or conditional API stub. `pickle.loads`, `joblib.load`, and `torch.load` now also require trusted inputs before the call; broader load-time prevention still requires adopting those preconditions on each real API surface.
 
 The first-pass OSV bucket report is a triage aid, not a final denominator. It separates duplicates, malicious packages, analyzer-policy advisories, false positives, and records needing source confirmation before Falcon makes coverage claims over them.
 
@@ -37,7 +38,7 @@ The first-pass OSV bucket report is a triage aid, not a final denominator. It se
 
 | CWE | Falcon verdict | Why |
 |---|---|---|
-| CWE-502: Deserialization of Untrusted Data | Caught partially | Falcon catches returned-value trust flow from pickle-backed APIs. It does not yet prove that untrusted bytes cannot reach deserialization before code execution. |
+| CWE-502: Deserialization of Untrusted Data | Caught partially | Falcon catches returned-value trust flow from pickle-backed APIs and now blocks raw inputs for selected real loaders. It does not yet prove that untrusted bytes cannot reach every deserialization API before code execution. |
 | CWE-94: Improper Control of Generation of Code | Partial when mediated by pickle | If the CWE-94 exploit branch is a pickle load path, Falcon can flag the typed deserialization flow. General code-injection bugs are out of scope. |
 | CWE-20: Improper Input Validation | Partial when the bad input reaches a stubbed deserializer | Falcon does not prove general validation. It only catches the branch where validation failure becomes unsafe deserialization. |
 | CWE-121 / CWE-125: Memory safety | Out of scope | These are CPython/runtime memory-access issues, not Python type-level deserialization flows. |
@@ -46,12 +47,12 @@ The first-pass OSV bucket report is a triage aid, not a final denominator. It se
 
 | Category | Current status | Examples |
 |---|---|---|
-| Direct stdlib pickle source | Caught in typed source | `pickle.load`, `pickle.loads`, `_pickle`, `shelve` reads. |
+| Direct stdlib pickle source | Caught in typed source; selected load-time gate | `pickle.loads` now requires `TrustedBytes`; `pickle.load`, `_pickle`, and `shelve` reads still provide returned-value quarantine. |
 | Conditional unsafe API | Implemented for NumPy | `numpy.load(..., allow_pickle=True)`. |
 | Public wrapper around pickle | Implemented for selected packages | LangChain FAISS, Kedro `ShelveStore`, LlamaIndex `JsonPickleSerializer`, pyfory, Pipecat, torch_musa, PyTorch, vLLM, InvokeAI, Horovod. |
 | Internal service deserialization | Partial | SocketIO queues, LeRobot gRPC, SGLang ZMQ, Tendenci reports. Falcon can catch source code or return flow, but not deployment trust. |
 | Alternate pickle-family libraries | Implemented at sink-family level | `cloudpickle.load(s)` and `jsonpickle.decode` now return `Unsafe[Any]`. |
-| Adjacent Python serialization sinks | Implemented at sink-family or selected wrapper level | `dill.load(s)`, `joblib.load`, `marshal.load(s)`, pandas `read_pickle`, skops `Card.get_model`, Embedchain `OpenAPILoader.load_data`, and unsafe YAML loaders now return `Unsafe[Any]`. This quarantines returned values; it does not prove safe invocation of the loader itself. |
+| Adjacent Python serialization sinks | Implemented at sink-family or selected wrapper level | `joblib.load` now requires `TrustedPath`; `dill.load(s)`, `marshal.load(s)`, pandas `read_pickle`, skops `Card.get_model`, Embedchain `OpenAPILoader.load_data`, and unsafe YAML loaders return `Unsafe[Any]`. Most still need trusted-input adoption before load-time prevention claims. |
 | Analyzer misclassification | Out of scope | Fickling CVEs are about a security analyzer's verdict, not an application value flowing from deserialization. |
 
 ## Per-CVE Verdicts
@@ -62,7 +63,7 @@ The first-pass OSV bucket report is a triage aid, not a final denominator. It se
 | CVE-2024-5998 | LangChain | FAISS pickle-backed deserialization | Implemented target stub. |
 | CVE-2024-9701 | Kedro | `shelve` wrapper | Implemented target stub. |
 | CVE-2025-3108 | LlamaIndex | `pickle.loads` fallback | Implemented target stub. |
-| CVE-2025-32434 | PyTorch | `torch.load` | Implemented target stub. |
+| CVE-2025-32434 | PyTorch | `torch.load` | Implemented target stub; `torch.load` now requires `TrustedPath` and still returns `Unsafe[Any]`. |
 | CVE-2025-50472 | ModelScope / ms-swift | `pickle.load` | Validated source-shaped fixture; public API still needs confirmation. |
 | CVE-2025-61622 | pyfory / pyfury | pickle fallback | Implemented target stub. |
 | CVE-2025-61765 | python-socketio | queue pickle deserialization | Partial target stub; deployment trust remains out of type scope. |
@@ -91,7 +92,7 @@ See [CVE Triage](cve-triage.md) for code locations, mypy/pyright validation stat
 
 The next high-leverage scope is not packaging. It is wrapper precision around the newly stubbed alternate serialization libraries:
 
-- trusted-input adoption for real package APIs where stable public surfaces can require `TrustedBytes`, `TrustedPath`, or trusted artifacts;
+- extend trusted-input adoption beyond the first real API set: `pickle.loads`, `joblib.load`, and `torch.load`;
 - normalization of the remaining 221 OSV candidates into catchable, partial, out-of-scope, duplicate, malicious-package, and false-positive buckets.
 
-The `cloudpickle`, `jsonpickle`, `dill`, `joblib`, `marshal`, pandas pickle helper, skops, Embedchain, vLLM, InvokeAI, Horovod, and unsafe YAML records are now type-catchable at the sink-family or selected-wrapper level. The `TrustedBytes` / `TrustedPath` proof and diagnostic wrapper now exist, but load-time RCE prevention still requires applying those trusted-input preconditions to each real API surface.
+The `cloudpickle`, `jsonpickle`, `dill`, `joblib`, `marshal`, pandas pickle helper, skops, Embedchain, vLLM, InvokeAI, Horovod, and unsafe YAML records are now type-catchable at the sink-family or selected-wrapper level. The `TrustedBytes` / `TrustedPath` proof and real API checks now cover `pickle.loads`, `joblib.load`, and `torch.load`, but load-time RCE prevention still requires applying those trusted-input preconditions to more API surfaces.

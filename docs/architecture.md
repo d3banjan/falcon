@@ -7,9 +7,9 @@ title: Architecture
 
 ## What this is
 
-Python security checker MVP. Stub files (`.pyi`) annotate dangerous APIs with `Unsafe[T]` return types. Strict-mode type-check = security gate. Escape hatch = native `typing.cast` plus an auditable `# trust:` comment.
+Python security checker MVP. Stub files (`.pyi`) annotate dangerous APIs with `Unsafe[T]` return types and, for selected real loaders, trusted-input preconditions. Strict-mode type-check = security gate. Escape hatch = native `typing.cast` plus an auditable `# trust:` comment. Load-time gates use explicit provenance wrappers such as `TrustedBytes` and `TrustedPath`.
 
-MVP target: Python deserialization flows that can be expressed as typed unsafe sources. The core stdlib surface is `pickle`, `_pickle`, `shelve`, and `marshal`; downstream extensions include CVE-backed wrapper APIs such as `numpy.load(..., allow_pickle=True)`, FAISS deserializers, `torch.load`, `dill`, `joblib`, and unsafe YAML loaders.
+MVP target: Python deserialization flows that can be expressed as typed unsafe sources. The core stdlib surface is `pickle`, `_pickle`, `shelve`, and `marshal`; downstream extensions include CVE-backed wrapper APIs such as `numpy.load(..., allow_pickle=True)`, FAISS deserializers, `torch.load`, `dill`, `joblib`, and unsafe YAML loaders. The first real load-time gates are `pickle.loads(TrustedBytes)`, `joblib.load(TrustedPath)`, and `torch.load(TrustedPath)`.
 
 ## Key decisions
 
@@ -40,6 +40,14 @@ loader subclass or `super().__init__(safe=False)` hidden in an MRO chain, needs 
 semantic rule. The likely home is a checker plugin or `pickle-secure audit`
 extension that inspects class definitions and wrapper forwarding, then reports a
 diagnostic or marks affected calls as `Unsafe[Any]` / trusted-input-gated.
+
+### 6. Trusted-input gates are opt-in per API
+
+`TrustedBytes` and `TrustedPath` are now enforced on the first stable real APIs:
+`pickle.loads`, `joblib.load`, and `torch.load`. These gates block raw input at
+the call site, but they do not declassify the returned value; successful calls
+still return `Unsafe[Any]`. Other loaders remain returned-value quarantine until
+their public API stubs adopt the same precondition.
 
 ## Package layout
 

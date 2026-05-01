@@ -64,14 +64,16 @@ def test_unsafe_type_is_well_formed(tmp_path: Path) -> None:
 
 
 def test_loads_returns_unsafe(tmp_path: Path) -> None:
-    """pickle.loads return type is Unsafe[Any] — cannot assign to dict without error."""
+    """pickle.loads requires TrustedBytes and still returns Unsafe[Any]."""
     code = textwrap.dedent("""\
         import pickle
         from _unsafe import Unsafe
+        from pickle_stubs_secure.trust import trusted_bytes
         from typing import Any
 
         def deserialize(data: bytes) -> Unsafe[Any]:
-            return pickle.loads(data)
+            trusted = trusted_bytes(data, reason="fixture")
+            return pickle.loads(trusted)
     """)
     rc, output = mypy_run(code, tmp_path)
     assert rc == 0, f"Stub return type mismatch:\n{output}"

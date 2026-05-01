@@ -12,13 +12,16 @@ This is the launch handoff for the next Falcon session.
 - Repo root: `/home/debanjan/fun/falcon`.
 - Public remote: `git@github.com:d3banjan/falcon.git`.
 - Branch: `master`.
-- Latest pushed commit: `b2c94b1 Use Falcon branding for stubs`.
+- Latest pushed commit before this slice: `8db8ae3 Add source CVE fixtures and wrapper forwarding proof`.
 - Worktree status at handoff: clean.
 - The old parent-repo subtree workflow is no longer active for current work.
 
 ## Recent Commits
 
 - `b2c94b1` — use Falcon branding for stubs while preserving compatibility names.
+- `8db8ae3` — add source CVE fixtures and wrapper forwarding proof.
+- `9e8259e` — add CVE wrapper policy slices.
+- `3fd9357` — expand wrapper checker fixtures.
 - `7401666` — document future semantic-policy backlog.
 - `d63a9c1` — add TrustedBytes/TrustedPath diagnostic wrappers and Lean provenance model.
 - `d33d1cf` — generalize Lean imported loaders as code-path specs instead of package-specific constructors.
@@ -57,15 +60,31 @@ This is the launch handoff for the next Falcon session.
 
 Fixture: `tests/fixtures/fix_cve_downstream_wrappers.py`.
 
-- mypy: 35 expected unsafe diagnostics.
-- pyright: 35 expected unsafe assignment errors.
-- ty: 34 expected unsafe assignment errors; `ty` still resolves stdlib `marshal` before Falcon's overlay.
+- mypy: 37 expected diagnostics: 35 unsafe-return assignments plus raw
+  `joblib.load` / `torch.load` trusted-input errors.
+- pyright: 37 expected errors.
+- ty: 36 expected diagnostics: 34 unsafe assignments plus raw `joblib.load` /
+  `torch.load` trusted-input errors; `ty` still resolves stdlib `marshal`
+  before Falcon's overlay.
+
+Fixture: `tests/fixtures/fix_cve_source_direct_pickle.py`.
+
+- mypy: 15 expected diagnostics: 9 unsafe-return assignments plus 6 raw
+  `pickle.loads` trusted-input errors.
+- pyright: 15 expected errors.
+- ty: 15 expected diagnostics.
 
 Trusted provenance diagnostic fixture: `tests/fixtures/fix_trusted_provenance.py`.
 
 - mypy: 4 expected errors.
 - pyright: 4 expected errors.
 - ty: 4 expected errors.
+
+Real API trusted-input fixture: `tests/fixtures/fix_trusted_real_apis.py`.
+
+- mypy: 3 raw-input errors and 3 unsafe-return assignment errors.
+- pyright: 3 raw-input errors and 3 unsafe-return assignment errors.
+- ty: 3 raw-input errors and 3 unsafe-return assignment errors.
 
 ## Lean State
 
@@ -78,6 +97,9 @@ Lean now models:
 - explicit promotion into `TrustedBytes`, `TrustedPath`, and trusted artifacts;
 - load-time risk classification;
 - replacement sound fragment excluding known counterexamples.
+- wrapper-forwarding evidence into imported-loader specs;
+- real API trusted-input policy for `pickle.loads`, `joblib.load`, and
+  `torch.load`.
 
 Known Lean caveat:
 
@@ -125,11 +147,23 @@ Completed in the current follow-up slice:
   manga-image-translator, and PLY.
 - Added the Lean wrapper-forwarding proof family that turns wrapper evidence
   into an imported-loader spec and `Unsafe[Any]` taint.
+- Added first real API trusted-input gates:
+  - `pickle.loads` now requires `TrustedBytes`.
+  - `joblib.load` now requires `TrustedPath`.
+  - `torch.load` now requires `TrustedPath`.
+  - All three still return `Unsafe[Any]`.
+- Added `tests/fixtures/fix_trusted_real_apis.py` and checker-matrix coverage
+  for raw-input rejection plus returned-value quarantine.
+- Extended `pickle-secure audit` to list trusted-input promotions in JSON and
+  human output separately from cast escapes.
+- Added the Lean `RealAPIPolicy.lean` bridge from those enforced stubs to the
+  generic imported-loader/provenance model.
 
 Next:
 
-1. Promote load-time prevention claims only after relevant real APIs require
-   `TrustedBytes`, `TrustedPath`, or trusted artifacts.
+1. Extend trusted-input gates to the next stable APIs, likely
+   `cloudpickle.loads`, `dill.load(s)`, pandas `read_pickle`, and selected
+   wrapper APIs whose public surfaces are stable.
 
 2. Continue OSV candidate normalization and source confirmation for rows that
    can become stable consumer stubs.

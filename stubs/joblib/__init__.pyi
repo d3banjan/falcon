@@ -3,6 +3,7 @@
 from typing import Any
 
 from _unsafe import Unsafe
+from pickle_stubs_secure.trust import TrustedPath
 
 
-def load(filename: Any, *args: Any, **kwargs: Any) -> Unsafe[Any]: ...
+def load(filename: TrustedPath, *args: Any, **kwargs: Any) -> Unsafe[Any]: ...

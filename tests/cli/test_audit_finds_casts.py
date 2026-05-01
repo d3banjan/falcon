@@ -3,7 +3,7 @@
 from pathlib import Path
 
 
-from pickle_stubs_secure.cli.audit_cmd import audit_file, audit
+from pickle_stubs_secure.cli.audit_cmd import audit, audit_file, audit_trust_promotions_file
 from tests.cli.fixtures import (
     CODE_WITH_CASTS,
     CODE_WITH_ALIASES,
@@ -49,6 +49,22 @@ def test_audit_file_with_aliases(tmp_path: Path) -> None:
     fixture = create_fixture_file(tmp_path, "test.py", CODE_WITH_ALIASES)
     casts = audit_file(fixture)
     assert len(casts) == 2
+
+
+def test_audit_file_lists_trust_promotion_aliases(tmp_path: Path) -> None:
+    """audit_trust_promotions_file handles module and function aliases."""
+    code = """\
+from pathlib import Path
+import pickle_stubs_secure.trust as trust
+from pickle_stubs_secure.trust import trusted_bytes as mark_bytes
+
+payload = mark_bytes(b"x", reason="fixture")
+path = trust.trusted_path(Path("model.pkl"), reason="fixture")
+"""
+    fixture = create_fixture_file(tmp_path, "test.py", code)
+    promotions = audit_trust_promotions_file(fixture)
+    assert len(promotions) == 2
+    assert {item["category"] for item in promotions} == {"trusted-bytes", "trusted-path"}
 
 
 def test_audit_integration_finds_casts(tmp_path: Path) -> None:

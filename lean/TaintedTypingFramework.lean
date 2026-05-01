@@ -16,3 +16,4 @@ import TaintedTypingFramework.LoadTime
 import TaintedTypingFramework.BackendEvidence
 import TaintedTypingFramework.ConditionalConfig
 import TaintedTypingFramework.WrapperForwarding
+import TaintedTypingFramework.RealAPIPolicy

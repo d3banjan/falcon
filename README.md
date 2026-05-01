@@ -5,7 +5,7 @@
 
 Falcon turns pickle-backed deserialization risk into a type-checking gate.
 
-The project ships Python stubs that mark dangerous deserialization APIs as `Unsafe[Any]`. Under strict `mypy` or `pyright`, application code cannot silently treat those values as trusted data. Intentional trust must be written as `cast(...)` and can be enumerated by `pickle-secure audit`.
+The project ships Python stubs that mark dangerous deserialization APIs as `Unsafe[Any]`. Selected real loaders also require explicit provenance wrappers such as `TrustedBytes` or `TrustedPath` before the call. Under strict `mypy` or `pyright`, application code cannot silently deserialize raw inputs or treat returned values as trusted data. Intentional trust must be written as `cast(...)` and can be enumerated by `pickle-secure audit`.
 
 Microsite: <https://d3banjan.github.io/falcon/>
 
@@ -21,24 +21,27 @@ Falcon does not patch upstream packages. It blocks unaudited vulnerable use in d
 from typing import Any, cast
 import pickle
 import numpy as np
+from pickle_stubs_secure.trust import trusted_bytes
 
 def unsafe_session(raw: bytes) -> dict[str, Any]:
-    return pickle.loads(raw)  # type error: Unsafe[Any]
+    return pickle.loads(raw)  # type error: raw bytes are not TrustedBytes
 
 def unsafe_model(path: str) -> dict[str, Any]:
     return np.load(path, allow_pickle=True)  # type error: Unsafe[Any]
 
 def reviewed(raw: bytes) -> dict[str, Any]:
-    return cast(dict[str, Any], pickle.loads(raw))  # trust: migration reviewed inbound artifact
+    payload = trusted_bytes(raw, reason="migration reviewed inbound artifact")
+    return cast(dict[str, Any], pickle.loads(payload))  # trust: migration reviewed inbound artifact
 ```
 
-The first two flows fail under the strict profile. The reviewed flow type-checks, but `pickle-secure audit` reports the trust boundary.
+The first two flows fail under the strict profile. The reviewed flow type-checks, but `pickle-secure audit` reports the cast boundary and the trusted-input promotion.
 
 ## Current Scope
 
 Core stdlib surfaces:
 
-- `pickle.load`, `pickle.loads`, `pickle.Unpickler.load`
+- `pickle.load`, `pickle.Unpickler.load`
+- `pickle.loads` requires `TrustedBytes` and still returns `Unsafe[Any]`
 - `_pickle.load`, `_pickle.loads`, `_pickle.Unpickler.load`
 - `shelve` read paths: `__getitem__`, `get`, `values`, `items`
 - adjacent deserialization sinks: `cloudpickle.load`, `cloudpickle.loads`, `jsonpickle.decode`, `jsonpickle.loads`, `dill.load`, `dill.loads`, `joblib.load`, `marshal.load`, `marshal.loads`, `pandas.read_pickle`, `pandas.io.pickle.read_pickle`, `yaml.load`, `yaml.unsafe_load`, `yaml.full_load`
@@ -53,12 +56,13 @@ CVE-backed downstream pilot surfaces:
 - python-socketio queue manager emit/callback handlers
 - Pipecat LiveKit frame deserializer
 - torch_musa compare utilities
-- PyTorch `torch.load`
+- PyTorch `torch.load` requires `TrustedPath` and still returns `Unsafe[Any]`
 - vLLM PyTorch weight iterators
 - InvokeAI model-loading helpers
 - Horovod cloudpickle codec
 - smolagents remote executor `deserialize` and `loads`
 - cloudpickle/jsonpickle CVE sink-family stubs
+- `joblib.load` requires `TrustedPath` and still returns `Unsafe[Any]`
 
 See [cve_db/reports/downstream-stubs-2026-04-30.md](cve_db/reports/downstream-stubs-2026-04-30.md) for the current CVE verdicts.
 See [cve_db/reports/osv-deserialization-candidates-2026-05-01.md](cve_db/reports/osv-deserialization-candidates-2026-05-01.md) for the expanded OSV candidate run.
@@ -109,8 +113,9 @@ This is not a proof that Python, mypy, pyright, or every dependency is sound. It
 ## What Is Out of Scope
 
 - Proving load-time RCE cannot occur across arbitrary APIs. The Lean model and
-  diagnostic wrappers now cover the `TrustedBytes` / `TrustedPath` boundary, but
-  broad third-party API adoption remains future work.
+  the first real API stubs now cover the `TrustedBytes` / `TrustedPath`
+  boundary for `pickle.loads`, `joblib.load`, and `torch.load`, but broad
+  third-party API adoption remains future work.
 - Authorization, SSRF, path traversal, crypto, race conditions, and business logic CVEs.
 - Full type modeling of every downstream package.
 - Replacing Bandit, Semgrep, Ruff, SAST, or dependency scanning.

@@ -39,6 +39,8 @@ See `TaintedTypingFramework/Bridging.lean` for the honest gap analysis.
 - `TaintedTypingFramework/Ingress.lean` — untrusted ingress provenance examples
 - `TaintedTypingFramework/Provenance.lean` — TrustedBytes/TrustedPath/TrustedArtifact promotion boundary
 - `TaintedTypingFramework/LoadTime.lean` — load-time risk classification model
+- `TaintedTypingFramework/WrapperForwarding.lean` — wrapper evidence forwarding into generic imported-loader specs
+- `TaintedTypingFramework/RealAPIPolicy.lean` — enforced trusted-input policy for `pickle.loads`, `joblib.load`, and `torch.load`
 - `TaintedTypingFramework/SoundFragment.lean` — replacement invariant excluding
   known higher-order counterexamples
 - `proofs/` — prose walkthroughs of each theorem
@@ -67,8 +69,12 @@ input.
   the dangerous-loader return typed as `Unsafe[Any]`.
 - `LoadTime.lean` classifies loader families whose execution may happen before
   any returned value is quarantined.
+- `RealAPIPolicy.lean` connects the first concrete enforced stubs to the generic
+  model: `pickle.loads` requires `TrustedBytes`, while `joblib.load` and
+  `torch.load` require `TrustedPath`.
 - The practical claim is therefore that Falcon can keep returned values tainted,
-  not that load-time execution is blocked.
+  and can block selected untrusted loader calls where real API stubs adopt the
+  trusted-input precondition.
 
 ## Build
 
@@ -94,6 +100,7 @@ Expected output: build succeeds with `sorry`-declaration warnings only.
 | Trusted provenance promotion | ✅ Proved | `Provenance.lean` permits promoted inputs while preserving `Unsafe[Any]` returns |
 | Load-time risk classification | ✅ Proved | `LoadTime.lean` separates call-time risk from returned-value quarantine |
 | Wrapper forwarding evidence | ✅ Proved | `WrapperForwarding.lean` turns wrapper evidence into an imported-loader spec and `Unsafe[Any]` taint |
+| Real API trusted-input policy | ✅ Proved | `RealAPIPolicy.lean` connects enforced `pickle.loads`, `joblib.load`, and `torch.load` stubs to the generic imported-loader model |
 | Replacement sound fragment | ✅ Proved | `SoundFragment.lean` rejects the counterexample shapes found in `Soundness.lean` |
 
 ## Lean backlog
@@ -108,6 +115,8 @@ Expected output: build succeeds with `sorry`-declaration warnings only.
   wrapper evidence becomes app-type backend evidence, justifies
   `FalconTaint ... TyUnsafeAny`, does not declassify to concrete types, and can
   be reused as an `ImportedDangerousCall` precondition.
+- Real API policy is implemented in `RealAPIPolicy.lean` for the first enforced
+  call-site preconditions. Successful trusted calls still return `Unsafe[Any]`.
 - Prefer `ImportedLoaders.lean` for future package/API coverage: imported code
   paths should be data in a generic spec, not new Lean constructors.
 - Unify or retire the older enumerated `Loader` examples once the generic

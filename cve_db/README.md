@@ -27,8 +27,10 @@ fixtures are now covered, as are stable diagnostic wrapper stubs for vLLM
 PyTorch weight iterators, InvokeAI model-loading helpers, and Horovod
 cloudpickle decoding. Source-shaped direct-pickle CVE fixtures now cover the
 source-only ms-swift, Tendenci, pdfminer.six, LeRobot, SGLang,
-manga-image-translator, and PLY slice. The next implementation slice is
-trusted-input adoption for real APIs and continued OSV candidate triage.
+manga-image-translator, and PLY slice. The first real trusted-input gates are
+now implemented for `pickle.loads` (`TrustedBytes`) and for `joblib.load` /
+`torch.load` (`TrustedPath`). The next implementation slice is broader
+trusted-input adoption and continued OSV candidate triage.
 
 ## Candidate Collection
 

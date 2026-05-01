@@ -48,6 +48,14 @@ UNSAFE_SHELF_MODULES = {
     "shelve",
 }
 
+TRUST_PROMOTION_FUNCS = {
+    ("pickle_stubs_secure.trust", "trusted_path"): "trusted-path",
+    ("pickle_stubs_secure.trust", "verify_path_sha256"): "trusted-path",
+    ("pickle_stubs_secure.trust", "trusted_bytes"): "trusted-bytes",
+    ("pickle_stubs_secure.trust", "verify_bytes_sha256"): "trusted-bytes",
+    ("pickle_stubs_secure.trust", "trusted_artifact"): "trusted-artifact",
+}
+
 
 class CastEscapeVisitor(ast.NodeVisitor):
     """AST visitor to find cast(T, pickle.loads(...)) patterns."""
@@ -297,6 +305,64 @@ class CastEscapeVisitor(ast.NodeVisitor):
         }
 
 
+class TrustPromotionVisitor(ast.NodeVisitor):
+    """AST visitor to list explicit trusted-input promotion call sites."""
+
+    def __init__(self, filepath: str):
+        self.filepath = filepath
+        self.promotions: list[dict[str, Any]] = []
+        self.import_aliases: dict[str, str] = {}
+        self.from_imports: dict[str, tuple[str, str]] = {}
+
+    def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
+        """Track: from X import Y [as Z]."""
+        if node.module:
+            for alias in node.names:
+                name = alias.asname if alias.asname else alias.name
+                self.from_imports[name] = (node.module, alias.name)
+        self.generic_visit(node)
+
+    def visit_Import(self, node: ast.Import) -> None:
+        """Track: import X [as Y]."""
+        for alias in node.names:
+            name = alias.asname if alias.asname else alias.name
+            self.import_aliases[name] = alias.name
+        self.generic_visit(node)
+
+    def visit_Call(self, node: ast.Call) -> None:
+        """Find trusted_path/trusted_bytes/verified promotion calls."""
+        promotion_kind = self._promotion_kind(node)
+        if promotion_kind:
+            self.promotions.append(self._record_promotion(node, promotion_kind))
+        self.generic_visit(node)
+
+    def _promotion_kind(self, node: ast.Call) -> str | None:
+        func = node.func
+
+        if isinstance(func, ast.Name):
+            if func.id in self.from_imports:
+                return TRUST_PROMOTION_FUNCS.get(self.from_imports[func.id])
+            return None
+
+        if isinstance(func, ast.Attribute):
+            if isinstance(func.value, ast.Name):
+                module_name = self.import_aliases.get(func.value.id, func.value.id)
+                return TRUST_PROMOTION_FUNCS.get((module_name, func.attr))
+        return None
+
+    def _record_promotion(self, node: ast.Call, promotion_kind: str) -> dict[str, Any]:
+        lineno = node.lineno
+        line = linecache.getline(self.filepath, lineno).rstrip("\n")
+        return {
+            "type": "trust_promotion",
+            "category": promotion_kind,
+            "file": self.filepath,
+            "line": lineno,
+            "code": line,
+            "message": f"explicit {promotion_kind} promotion",
+        }
+
+
 class SemanticPolicyVisitor(ast.NodeVisitor):
     """AST visitor for unsafe literal configuration that stubs cannot see."""
 
@@ -433,6 +499,20 @@ def audit_semantic_policy_file(filepath: Path) -> list[dict[str, Any]]:
     return visitor.findings
 
 
+def audit_trust_promotions_file(filepath: Path) -> list[dict[str, Any]]:
+    """AST-walk a single .py file, return trusted-input promotion findings."""
+    try:
+        source = filepath.read_text(encoding="utf-8", errors="replace")
+        tree = ast.parse(source, filename=str(filepath))
+    except SyntaxError as e:
+        print(f"Warning: syntax error in {filepath}: {e}", file=sys.stderr)
+        return []
+
+    visitor = TrustPromotionVisitor(str(filepath))
+    visitor.visit(tree)
+    return visitor.promotions
+
+
 def audit(
     path: Path,
     config_path: Path | None = None,
@@ -460,13 +540,15 @@ def audit(
     require_reason = set(config.get("require_reason", []))
     unknown_tag_mode = config.get("unknown_tag", "error")
 
-    # Collect all cast escapes and semantic-policy findings
+    # Collect all cast escapes, trust promotions, and semantic-policy findings
     all_casts = []
+    all_trust_promotions = []
     all_policy_findings = []
     py_files = list(path.rglob("*.py")) if path.is_dir() else [path]
 
     for pyfile in py_files:
         all_casts.extend(audit_file(pyfile))
+        all_trust_promotions.extend(audit_trust_promotions_file(pyfile))
         all_policy_findings.extend(audit_semantic_policy_file(pyfile))
 
     # Filter
@@ -540,6 +622,7 @@ def audit(
     if json_output:
         output = {
             "total_casts": len(all_casts),
+            "trust_promotions": all_trust_promotions,
             "semantic_findings": all_policy_findings,
             "violations": violations,
             "by_tag": _group_by_tag(all_casts) if not tag_filter else {},
@@ -559,6 +642,14 @@ def audit(
             print(
                 f"  {finding['file']}:{finding['line']}: "
                 f"{finding['category']} ({finding['catchability']}): {finding['message']}"
+            )
+
+    if all_trust_promotions:
+        print("\nTrusted input promotions:")
+        for promotion in all_trust_promotions:
+            print(
+                f"  {promotion['file']}:{promotion['line']}: "
+                f"{promotion['category']}: {promotion['message']}"
             )
 
     if violations:

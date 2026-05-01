@@ -81,3 +81,25 @@ unknown_tag = "allow"
 
     assert "by_tag" in data
     assert isinstance(data["by_tag"], dict)
+
+
+def test_audit_json_lists_trust_promotions(tmp_path: Path, capsys) -> None:
+    """JSON output lists trusted provenance promotion sites."""
+    code = """\
+from pathlib import Path
+from pickle_stubs_secure.trust import trusted_bytes, trusted_path, verify_path_sha256
+
+payload = trusted_bytes(b"x", reason="fixture")
+path = trusted_path(Path("model.pkl"), reason="fixture")
+verified = verify_path_sha256(Path("model.pkl"), "0" * 64)
+"""
+    create_fixture_file(tmp_path, "test.py", code)
+    create_config_file(tmp_path, "[tool.pickle_secure]\nunknown_tag = \"allow\"\n")
+
+    audit(tmp_path, config_path=tmp_path / "pyproject.toml", json_output=True)
+    captured = capsys.readouterr()
+    data = json.loads(captured.out)
+
+    promotions = data["trust_promotions"]
+    assert len(promotions) == 3
+    assert {item["category"] for item in promotions} == {"trusted-bytes", "trusted-path"}
