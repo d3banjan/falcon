@@ -97,6 +97,15 @@ Expected output: build succeeds with `sorry`-declaration warnings only.
 
 ## Lean backlog
 
+- Add a backend-evidence model for the next Falcon architecture slice:
+  `StubEvidence`, `ASTEvidence`, and `AppTypeEvidence` should all justify the
+  same taint result without declassifying `Unsafe[Any]`.
+- Add a conditional-config proof family for unsafe literal policy flags such as
+  `allow_pickle=True`, `safe=False`, `remote_exec=True`, and
+  `trust_remote_code=True`.
+- Add a wrapper-forwarding proof family that turns wrapper evidence into an
+  imported-loader spec when a wrapper forwards trusted input or unsafe config
+  into a dangerous loader.
 - Prefer `ImportedLoaders.lean` for future package/API coverage: imported code
   paths should be data in a generic spec, not new Lean constructors.
 - Unify or retire the older enumerated `Loader` examples once the generic

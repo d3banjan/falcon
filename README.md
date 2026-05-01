@@ -117,6 +117,7 @@ This is not a proof that Python, mypy, pyright, or every dependency is sound. It
 - CVE workflow: [docs/cve-database.md](docs/cve-database.md)
 - Launch quiz: [docs/launch-quiz.md](docs/launch-quiz.md)
 - Architecture: [docs/architecture.md](docs/architecture.md)
+- Current handoff: [docs/session-handoff-2026-05-01.md](docs/session-handoff-2026-05-01.md)
 
 ## License
 

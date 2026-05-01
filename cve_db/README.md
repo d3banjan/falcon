@@ -15,6 +15,14 @@ Start with:
 
 Records are JSON Lines: one CVE-library finding per line.
 
+## Current Launch Tracker
+
+As of 2026-05-01, use `../docs/session-handoff-2026-05-01.md` as the canonical
+session tracker. The next implementation slice is the first AST semantic-policy
+rule in `pickle-secure audit` for unsafe literal configuration such as
+`safe = False`, `remote_exec = True`, and `super().__init__(safe=False)`. Keep
+those rows under `checker-rule-needed` until the audit rule and fixtures exist.
+
 ## Candidate Collection
 
 Use the public OSV PyPI dump to generate broad candidates:
