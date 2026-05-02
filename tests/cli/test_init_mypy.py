@@ -1,11 +1,11 @@
-"""Test pickle-secure init for mypy."""
+"""Test falcon-secure init for mypy."""
 
 from pathlib import Path
 
 import pytest
 
-from pickle_stubs_secure.cli.init_cmd import init
-from pickle_stubs_secure.cli._config import read_toml
+from falcon_secure.cli.init_cmd import init
+from falcon_secure.cli._config import read_toml
 
 
 @pytest.fixture
@@ -33,12 +33,12 @@ def test_init_mypy_adds_mypy_path(mypy_pyproject: Path) -> None:
     assert any("stubs" in p for p in mypy_cfg["mypy_path"])
 
 
-def test_init_mypy_adds_pickle_secure_config(mypy_pyproject: Path) -> None:
-    """Init should add [tool.pickle_secure] skeleton."""
+def test_init_mypy_adds_falcon_secure_config(mypy_pyproject: Path) -> None:
+    """Init should add [tool.falcon_secure] skeleton."""
     assert init(mypy_pyproject) == 0
     toml_data = read_toml(mypy_pyproject)
-    assert "pickle_secure" in toml_data["tool"]
-    cfg = toml_data["tool"]["pickle_secure"]
+    assert "falcon_secure" in toml_data["tool"]
+    cfg = toml_data["tool"]["falcon_secure"]
     assert cfg["allow_tags"] == ["general", "test-fixture"]
     assert cfg["unknown_tag"] == "error"
 

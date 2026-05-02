@@ -1,1 +1,1 @@
-"""CLI tests for pickle-secure."""
+"""CLI tests for falcon-secure."""

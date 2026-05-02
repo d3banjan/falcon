@@ -1,9 +1,9 @@
-"""Test pickle-secure audit — untagged filter."""
+"""Test falcon-secure audit — untagged filter."""
 
 from pathlib import Path
 
 
-from pickle_stubs_secure.cli.audit_cmd import audit
+from falcon_secure.cli.audit_cmd import audit
 from tests.cli.fixtures import CODE_MIXED_TAGS, create_fixture_file, create_config_file
 
 
@@ -13,7 +13,7 @@ def test_audit_untagged_filter(tmp_path: Path, capsys) -> None:
     create_config_file(
         tmp_path,
         """\
-[tool.pickle_secure]
+[tool.falcon_secure]
 allow_tags = ["general", "test-fixture"]
 unknown_tag = "error"
 """,
@@ -33,7 +33,7 @@ def test_audit_by_tag_filter(tmp_path: Path, capsys) -> None:
     create_config_file(
         tmp_path,
         """\
-[tool.pickle_secure]
+[tool.falcon_secure]
 allow_tags = ["general", "test-fixture"]
 unknown_tag = "error"
 """,

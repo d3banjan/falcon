@@ -1,11 +1,11 @@
-"""Test pickle-secure init --dry-run."""
+"""Test falcon-secure init --dry-run."""
 
 from pathlib import Path
 
 import pytest
 
-from pickle_stubs_secure.cli.init_cmd import init
-from pickle_stubs_secure.cli._config import read_toml
+from falcon_secure.cli.init_cmd import init
+from falcon_secure.cli._config import read_toml
 
 
 @pytest.fixture

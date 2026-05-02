@@ -1,11 +1,11 @@
-"""Test pickle-secure init for pyright."""
+"""Test falcon-secure init for pyright."""
 
 from pathlib import Path
 
 import pytest
 
-from pickle_stubs_secure.cli.init_cmd import init
-from pickle_stubs_secure.cli._config import read_toml
+from falcon_secure.cli.init_cmd import init
+from falcon_secure.cli._config import read_toml
 
 
 @pytest.fixture
@@ -30,11 +30,11 @@ def test_init_pyright_adds_stubpath(pyright_pyproject: Path) -> None:
     assert "stubs" in pyright_cfg["stubPath"]
 
 
-def test_init_pyright_adds_pickle_secure_config(pyright_pyproject: Path) -> None:
-    """Init should add [tool.pickle_secure] skeleton."""
+def test_init_pyright_adds_falcon_secure_config(pyright_pyproject: Path) -> None:
+    """Init should add [tool.falcon_secure] skeleton."""
     assert init(pyright_pyproject) == 0
     toml_data = read_toml(pyright_pyproject)
-    assert "pickle_secure" in toml_data["tool"]
+    assert "falcon_secure" in toml_data["tool"]
 
 
 def test_init_pyright_idempotent(pyright_pyproject: Path) -> None:

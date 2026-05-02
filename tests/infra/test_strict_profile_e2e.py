@@ -164,7 +164,7 @@ class TestBasicProfileDoesNotCatchAnyLeaks:
 
 class TestStrictProfileConfigIntegrity:
     def test_pyproject_written_correctly(self, tmp_path: Path) -> None:
-        """Run pickle-secure init --profile=strict, verify all strict options present."""
+        """Run falcon-secure init --profile=strict, verify all strict options present."""
         pyproject = tmp_path / "pyproject.toml"
         pyproject.write_text("""\
 [tool.mypy]
@@ -173,7 +173,7 @@ strict = true
 
         result = subprocess.run(
             [
-                sys.executable, "-m", "pickle_stubs_secure.cli.main",
+                sys.executable, "-m", "falcon_secure.cli.main",
                 "init", "--profile=strict",
                 "--path", str(pyproject),
                 "--checker", "mypy",
@@ -204,5 +204,5 @@ strict = true
         assert "PGH003" in content
         assert "S301" in content
 
-        # pickle_secure config (allow_tags uses inline table syntax by tomlkit)
+        # falcon_secure config (allow_tags uses inline table syntax by tomlkit)
         assert "allow_tags" in content

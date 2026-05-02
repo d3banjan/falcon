@@ -1,8 +1,8 @@
-"""Test pickle-secure init --profile=strict."""
+"""Test falcon-secure init --profile=strict."""
 
 from pathlib import Path
 
-from pickle_stubs_secure.cli.init_cmd import init
+from falcon_secure.cli.init_cmd import init
 
 
 def test_init_strict_profile(tmp_path: Path) -> None:
@@ -42,7 +42,7 @@ strict = true
     assert "B009" in content
     assert "B010" in content
 
-    # Check pickle_secure tightened
+    # Check falcon_secure tightened
     assert 'allow_tags = ["general"]' in content
     assert 'deny_tags = ["legacy-migration"]' in content
     assert 'require_reason = ["legacy-migration"]' in content

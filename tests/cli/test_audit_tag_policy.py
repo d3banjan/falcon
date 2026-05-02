@@ -1,9 +1,9 @@
-"""Test pickle-secure audit — tag policy enforcement."""
+"""Test falcon-secure audit — tag policy enforcement."""
 
 from pathlib import Path
 
 
-from pickle_stubs_secure.cli.audit_cmd import audit
+from falcon_secure.cli.audit_cmd import audit
 from tests.cli.fixtures import (
     CODE_MIXED_TAGS,
     create_fixture_file,
@@ -17,7 +17,7 @@ def test_audit_tag_policy_allowed(tmp_path: Path) -> None:
     create_config_file(
         tmp_path,
         """\
-[tool.pickle_secure]
+[tool.falcon_secure]
 allow_tags = ["general"]
 deny_tags = []
 unknown_tag = "error"
@@ -35,7 +35,7 @@ def test_audit_tag_policy_denied(tmp_path: Path) -> None:
     create_config_file(
         tmp_path,
         """\
-[tool.pickle_secure]
+[tool.falcon_secure]
 allow_tags = ["general"]
 deny_tags = ["legacy-migration"]
 unknown_tag = "error"
@@ -53,7 +53,7 @@ def test_audit_tag_policy_unknown(tmp_path: Path) -> None:
     create_config_file(
         tmp_path,
         """\
-[tool.pickle_secure]
+[tool.falcon_secure]
 allow_tags = ["general"]
 unknown_tag = "error"
 """,
@@ -79,7 +79,7 @@ x2 = cast(dict, pickle.loads(b"2"))  # trust: legacy-migration
     create_config_file(
         tmp_path,
         """\
-[tool.pickle_secure]
+[tool.falcon_secure]
 allow_tags = ["legacy-migration"]
 require_reason = ["legacy-migration"]
 unknown_tag = "error"
@@ -103,7 +103,7 @@ data = cast(dict, pickle.loads(b"x"))
     create_config_file(
         tmp_path,
         """\
-[tool.pickle_secure]
+[tool.falcon_secure]
 allow_tags = ["general"]
 unknown_tag = "error"
 """,

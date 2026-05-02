@@ -5,7 +5,7 @@
 
 Falcon turns pickle-backed deserialization risk into a type-checking gate.
 
-The project ships Python stubs that mark dangerous deserialization APIs as `Unsafe[Any]`. Selected real loaders also require explicit provenance wrappers such as `TrustedBytes` or `TrustedPath` before the call. Under strict `mypy` or `pyright`, application code cannot silently treat deserialized values as trusted data, and selected call-time gates reject raw bytes, paths, and file handles before deserialization. Intentional trust must be written as `cast(...)` and can be enumerated by `pickle-secure audit`.
+The project ships Python stubs that mark dangerous deserialization APIs as `Unsafe[Any]`. Selected real loaders also require explicit provenance wrappers such as `TrustedBytes` or `TrustedPath` before the call. Under strict `mypy` or `pyright`, application code cannot silently treat deserialized values as trusted data, and selected call-time gates reject raw bytes, paths, and file handles before deserialization. Intentional trust must be written as `cast(...)` and can be enumerated by `falcon-secure audit`.
 
 Microsite: <https://d3banjan.github.io/falcon/>
 
@@ -21,7 +21,7 @@ Falcon does not patch upstream packages. It blocks unaudited vulnerable use in d
 from typing import Any, cast
 import pickle
 import numpy as np
-from pickle_stubs_secure.trust import trusted_bytes
+from falcon_secure.trust import trusted_bytes
 
 def unsafe_session(raw: bytes) -> dict[str, Any]:
     return pickle.loads(raw)  # type error: raw bytes are not TrustedBytes
@@ -34,7 +34,7 @@ def reviewed(raw: bytes) -> dict[str, Any]:
     return cast(dict[str, Any], pickle.loads(payload))  # trust: migration reviewed inbound artifact
 ```
 
-The first two flows fail under the strict profile. The reviewed flow type-checks, but `pickle-secure audit` reports the cast boundary and the trusted-input promotion.
+The first two flows fail under the strict profile. The reviewed flow type-checks, but `falcon-secure audit` reports the cast boundary and the trusted-input promotion.
 
 ## Current Scope
 
@@ -71,13 +71,13 @@ See [cve_db/reports/osv-deserialization-candidates-2026-05-01.md](cve_db/reports
 ## Install
 
 ```bash
-# Install Falcon. The current PyPI package name is a compatibility name.
-pip install pickle-stubs-secure
+# Install Falcon.
+pip install falcon-secure
 ```
 
-The installed distribution is `pickle-stubs-secure`; the runtime import path is
-`pickle_stubs_secure`, the CLI is `pickle-secure`, and local policy lives under
-`[tool.pickle_secure]`.
+The installed distribution is `falcon-secure`; the runtime import path is
+`falcon_secure`, the CLI is `falcon-secure`, and local policy lives under
+`[tool.falcon_secure]`.
 
 For local development from this repo:
 
@@ -89,19 +89,19 @@ uv run pytest tests/ -q
 ## Strict Profile
 
 ```bash
-pickle-secure init --profile=strict --write-precommit
+falcon-secure init --profile=strict --write-precommit
 mypy --strict .
 pyright .
-pickle-secure audit .
+falcon-secure audit .
 ```
 
-`pickle-secure init` configures checker stub paths and audit policy. The strict profile also tightens common escape routes such as unchecked `Any`, blank ignores, and dynamic access patterns.
+`falcon-secure init` configures checker stub paths and audit policy. The strict profile also tightens common escape routes such as unchecked `Any`, blank ignores, and dynamic access patterns.
 
 ## Repository Layout
 
-- `src/pickle_stubs_secure/` - runtime package and CLI; this is Falcon's current compatibility import path.
+- `src/falcon_secure/` - runtime package and CLI.
 - `stubs/` - canonical checker overlay used by `mypy_path` / `stubPath`.
-- `pickle-stubs/` - packaged stub distribution tree; treat this as a packaging implementation detail.
+- `falcon-stubs/` - packaged stub distribution tree; treat this as a packaging implementation detail.
 - `cve_db/` - machine-readable CVE evidence and coverage reports.
 - `docs/` - GitHub Pages microsite source.
 - `lean/` - separate formal model work.

@@ -9,12 +9,12 @@ title: Architecture
 
 Falcon is a strict-deserialization typing layer. API surfaces that can deserialize
 untrusted input are modeled as `Unsafe[Any]` in `stubs/`, and trust decisions are
-explicit and reviewable through `pickle-secure`.
+explicit and reviewable through `falcon-secure`.
 
 ## Current API policy
 
 Trusted-input preconditions are explicit through
-`pickle_stubs_secure.trust`: `TrustedBytes`, `TrustedBinaryIO`, and
+`falcon_secure.trust`: `TrustedBytes`, `TrustedBinaryIO`, and
 `TrustedPath`.
 
 - `pickle.loads` requires `TrustedBytes`.
@@ -24,16 +24,16 @@ Trusted-input preconditions are explicit through
   `torch.load` require `TrustedPath`.
 
 `typing.cast` is the typed escape hatch and is intended for intentional policy
-exceptions; each call is still governed by `pickle-secure` tag/reason policy.
+exceptions; each call is still governed by `falcon-secure` tag/reason policy.
 `# trust:` is not a language feature, but a review convention consumed by the
 audit command.
 
 ## Checker/audit mechanics
 
-- `pickle-secure init` writes checker wiring into `pyproject.toml` and configures
+- `falcon-secure init` writes checker wiring into `pyproject.toml` and configures
   `mypy_path` (mypy) or `stubPath` (pyright) so overlay stubs are applied.
 - `strict` profile adds tighter checker checks and selected ruff rules.
-- `pickle-secure audit` performs AST scans for cast escape sites, audit tags,
+- `falcon-secure audit` performs AST scans for cast escape sites, audit tags,
   trusted-input promotions (`trusted_*` / `verify_*` helpers), and semantic
   gaps such as unsafe `numpy.load(..., allow_pickle=True)` usage.
 - CI enforcement is based on checker output plus audit policy configuration

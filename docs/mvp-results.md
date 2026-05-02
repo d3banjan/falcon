@@ -12,9 +12,9 @@ current-state coverage page.
 ## Execution model
 
 1. Install Falcon stubs.
-2. Run `pickle-secure init --profile=strict`.
+2. Run `falcon-secure init --profile=strict`.
 3. Run `mypy`, `pyright`, and `ty`.
-4. Run `pickle-secure audit` to enumerate reviewed escapes.
+4. Run `falcon-secure audit` to enumerate reviewed escapes.
 
 The type-checker output is the proof artifact users can run in CI.
 
@@ -46,10 +46,9 @@ and runtime controls.
 ## Reproduce locally
 
 ```bash
-# Current compatibility package name for Falcon.
-pip install pickle-stubs-secure mypy pyright
-pickle-secure init --profile=strict --write-precommit
+pip install falcon-secure mypy pyright
+falcon-secure init --profile=strict --write-precommit
 mypy --strict .
 pyright .
-pickle-secure audit .
+falcon-secure audit .
 ```

@@ -830,7 +830,7 @@ wheels = [
 ]
 
 [[package]]
-name = "pickle-stubs-secure"
+name = "falcon-secure"
 version = "1.0.0a1"
 source = { editable = "." }
 dependencies = [

@@ -1,9 +1,9 @@
-"""Test pickle-secure audit semantic-policy findings."""
+"""Test falcon-secure audit semantic-policy findings."""
 
 import json
 from pathlib import Path
 
-from pickle_stubs_secure.cli.audit_cmd import audit, audit_semantic_policy_file
+from falcon_secure.cli.audit_cmd import audit, audit_semantic_policy_file
 from tests.cli.fixtures import create_config_file, create_fixture_file
 
 
@@ -90,7 +90,7 @@ class LoaderConfig:
     safe = False
 """
     create_fixture_file(tmp_path, "unsafe_config.py", code)
-    create_config_file(tmp_path, "[tool.pickle_secure]\nallow_tags = []\n")
+    create_config_file(tmp_path, "[tool.falcon_secure]\nallow_tags = []\n")
 
     result = audit(tmp_path, config_path=tmp_path / "pyproject.toml", json_output=True)
     captured = capsys.readouterr()

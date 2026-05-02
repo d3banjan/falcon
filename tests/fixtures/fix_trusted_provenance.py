@@ -3,8 +3,8 @@
 from pathlib import Path
 from typing import Any, cast
 
-from pickle_stubs_secure.loaders import joblib_load, pickle_loads
-from pickle_stubs_secure.trust import trusted_bytes, trusted_path
+from falcon_secure.loaders import joblib_load, pickle_loads
+from falcon_secure.trust import trusted_bytes, trusted_path
 
 raw_path = Path("model.joblib")
 raw_payload = b"\x80\x04."

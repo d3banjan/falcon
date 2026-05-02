@@ -13,7 +13,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from pickle_stubs_secure.cli.audit_cmd import audit
+from falcon_secure.cli.audit_cmd import audit
 from tests.conftest import mypy_check
 
 FIXTURE = Path(__file__).parent.parent / "fixtures" / "restricted_unpickler_demo.py"
@@ -174,7 +174,7 @@ data: dict[Any, Any] = cast(dict[Any, Any], RestrictedUnpickler(buf).load())  # 
     # Create a config file in tmp_path
     cfg = tmp_path / "pyproject.toml"
     cfg.write_text("""\
-[tool.pickle_secure]
+[tool.falcon_secure]
 allow_tags = ["reviewed-gadget-catalog"]
 unknown_tag = "error"
 """)

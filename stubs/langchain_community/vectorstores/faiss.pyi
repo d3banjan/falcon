@@ -1,7 +1,7 @@
 from typing import Any, Self
 
 from _unsafe import Unsafe
-from pickle_stubs_secure.trust import TrustedBytes, TrustedPath
+from falcon_secure.trust import TrustedBytes, TrustedPath
 
 
 class FAISS:

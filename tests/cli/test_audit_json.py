@@ -1,10 +1,10 @@
-"""Test pickle-secure audit — JSON output."""
+"""Test falcon-secure audit — JSON output."""
 
 import json
 from pathlib import Path
 
 
-from pickle_stubs_secure.cli.audit_cmd import audit
+from falcon_secure.cli.audit_cmd import audit
 from tests.cli.fixtures import CODE_WITH_CASTS, create_fixture_file, create_config_file
 
 
@@ -14,7 +14,7 @@ def test_audit_json_output(tmp_path: Path, capsys) -> None:
     create_config_file(
         tmp_path,
         """\
-[tool.pickle_secure]
+[tool.falcon_secure]
 allow_tags = ["general", "test-fixture"]
 unknown_tag = "error"
 """,
@@ -43,7 +43,7 @@ data = cast(dict, pickle.loads(b"x"))  # trust: denied-tag
     create_config_file(
         tmp_path,
         """\
-[tool.pickle_secure]
+[tool.falcon_secure]
 allow_tags = ["general"]
 deny_tags = ["denied-tag"]
 unknown_tag = "error"
@@ -69,7 +69,7 @@ def test_audit_json_by_tag(tmp_path: Path, capsys) -> None:
     create_config_file(
         tmp_path,
         """\
-[tool.pickle_secure]
+[tool.falcon_secure]
 allow_tags = ["general", "test-fixture"]
 unknown_tag = "allow"
 """,
@@ -87,14 +87,14 @@ def test_audit_json_lists_trust_promotions(tmp_path: Path, capsys) -> None:
     """JSON output lists trusted provenance promotion sites."""
     code = """\
 from pathlib import Path
-from pickle_stubs_secure.trust import trusted_bytes, trusted_path, verify_path_sha256
+from falcon_secure.trust import trusted_bytes, trusted_path, verify_path_sha256
 
 payload = trusted_bytes(b"x", reason="fixture")
 path = trusted_path(Path("model.pkl"), reason="fixture")
 verified = verify_path_sha256(Path("model.pkl"), "0" * 64)
 """
     create_fixture_file(tmp_path, "test.py", code)
-    create_config_file(tmp_path, "[tool.pickle_secure]\nunknown_tag = \"allow\"\n")
+    create_config_file(tmp_path, "[tool.falcon_secure]\nunknown_tag = \"allow\"\n")
 
     audit(tmp_path, config_path=tmp_path / "pyproject.toml", json_output=True)
     captured = capsys.readouterr()

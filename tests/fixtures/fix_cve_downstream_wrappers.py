@@ -25,7 +25,7 @@ from langchain.vectorstores.faiss import FAISS as LegacyFAISS
 from langchain_community.vectorstores.faiss import FAISS
 from llama_index.core.workflow import JsonPickleSerializer
 from pipecat.serializers.livekit import LivekitFrameSerializer
-from pickle_stubs_secure.trust import trusted_bytes, trusted_path
+from falcon_secure.trust import trusted_bytes, trusted_path
 from smolagents import RemotePythonExecutor
 from torch_musa.utils.compare_tool import compare_for_single_op
 from torch_musa.utils.compare_tool import nan_inf_track_for_single_op

@@ -1,9 +1,9 @@
-"""Test pickle-secure audit — aliased imports."""
+"""Test falcon-secure audit — aliased imports."""
 
 from pathlib import Path
 
 
-from pickle_stubs_secure.cli.audit_cmd import audit_file
+from falcon_secure.cli.audit_cmd import audit_file
 from tests.cli.fixtures import CODE_WITH_ALIASES, create_fixture_file
 
 

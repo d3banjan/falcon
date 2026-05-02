@@ -1,8 +1,8 @@
-"""Test pickle-secure init --profile=strict idempotency."""
+"""Test falcon-secure init --profile=strict idempotency."""
 
 from pathlib import Path
 
-from pickle_stubs_secure.cli.init_cmd import init
+from falcon_secure.cli.init_cmd import init
 
 
 def test_init_strict_idempotent(tmp_path: Path) -> None:
@@ -51,7 +51,7 @@ warn_return_any = true
 [tool.ruff.lint]
 extend-select = ["PGH003"]
 
-[tool.pickle_secure]
+[tool.falcon_secure]
 allow_tags = ["general"]
 deny_tags = ["legacy-migration"]
 """)

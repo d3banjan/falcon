@@ -22,9 +22,9 @@ Expected: 95 passed, 3 xfailed.
 ## Running the CLI
 
 ```bash
-uv run pickle-secure --version
-uv run pickle-secure init --profile=strict --dry-run
-uv run pickle-secure audit tests/ --json
+uv run falcon-secure --version
+uv run falcon-secure init --profile=strict --dry-run
+uv run falcon-secure audit tests/ --json
 ```
 
 ## Type checking
@@ -58,8 +58,8 @@ python analyze_results.py
 
 ## Project structure
 
-- `src/pickle_stubs_secure/` — runtime + CLI
-- `pickle-stubs/` — PEP 561 stub package
+- `src/falcon_secure/` — runtime + CLI
+- `falcon-stubs/` — PEP 561 stub package
 - `stubs/` — mypy_path overlay (canonical source)
 - `tests/` — test suite
 - `docs/` — architecture and design docs

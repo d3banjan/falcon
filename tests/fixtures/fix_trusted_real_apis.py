@@ -15,7 +15,7 @@ from langchain_community.vectorstores.faiss import FAISS
 from llama_index.core.workflow import JsonPickleSerializer
 from pandas.io import pickle as pandas_io_pickle
 from pipecat.serializers.livekit import LivekitFrameSerializer
-from pickle_stubs_secure.trust import trusted_binary_io, trusted_bytes, trusted_path
+from falcon_secure.trust import trusted_binary_io, trusted_bytes, trusted_path
 
 raw_path = Path("model.pkl")
 raw_payload = b"\x80\x04."

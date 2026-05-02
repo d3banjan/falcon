@@ -18,7 +18,7 @@ This is the launch handoff for the next Falcon session.
 
 ## Recent Commits
 
-- `b2c94b1` — use Falcon branding for stubs while preserving compatibility names.
+- `b2c94b1` — use Falcon branding for stubs while preserving the then-current package names.
 - `8db8ae3` — add source CVE fixtures and wrapper forwarding proof.
 - `9e8259e` — add CVE wrapper policy slices.
 - `3fd9357` — expand wrapper checker fixtures.
@@ -109,19 +109,19 @@ Known Lean caveat:
 
 Public branding should say Falcon or Falcon stubs.
 
-Preserve these compatibility identifiers unless doing a deliberate breaking rename:
+These identifiers were current before the coordinated launch rename:
 
-- package name: `pickle-stubs-secure`;
-- import path: `pickle_stubs_secure`;
-- CLI: `pickle-secure`;
-- config key: `[tool.pickle_secure]`;
-- packaged stub tree: `pickle-stubs/`.
+- package name: `falcon-secure`;
+- import path: `falcon_secure`;
+- CLI: `falcon-secure`;
+- config key: `[tool.falcon_secure]`;
+- packaged stub tree: `falcon-stubs/`.
 
 ## Recommended Next Launch Slices
 
 Completed in the current follow-up slice:
 
-- Implemented the first AST semantic-policy rule in `pickle-secure audit`.
+- Implemented the first AST semantic-policy rule in `falcon-secure audit`.
   - Detects class-body `safe = False`.
   - Detects class-body `remote_exec = True`.
   - Detects `super().__init__(safe=False)`.
@@ -154,7 +154,7 @@ Completed in the current follow-up slice:
   - All three still return `Unsafe[Any]`.
 - Added `tests/fixtures/fix_trusted_real_apis.py` and checker-matrix coverage
   for raw-input rejection plus returned-value quarantine.
-- Extended `pickle-secure audit` to list trusted-input promotions in JSON and
+- Extended `falcon-secure audit` to list trusted-input promotions in JSON and
   human output separately from cast escapes.
 - Added the Lean `RealAPIPolicy.lean` bridge from those enforced stubs to the
   generic imported-loader/provenance model.
@@ -170,7 +170,7 @@ Next:
 
 ## Launch Remaining Work
 
-- Decide whether to keep the compatibility PyPI/package/CLI names for launch or perform a coordinated rename.
+- Coordinated launch rename has since moved public names to `falcon-secure`.
 - Run one final full local suite before a launch tag:
   - `uv run pytest tests -q`
   - `uv run pytest tests/checker_matrix -q`

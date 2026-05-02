@@ -67,7 +67,7 @@ Core and sink-family loader gates currently enforced in stubs:
 - `pandas.io.pickle.read_pickle` requires `TrustedPath` and returns `Unsafe[Any]`
 - `torch.load` requires `TrustedPath` and returns `Unsafe[Any]`
 
-Selected wrapper gates currently enforced in both compatibility packages where
+Selected wrapper gates currently enforced in both stub trees where
 applicable:
 
 - LangChain community FAISS:
@@ -95,7 +95,7 @@ returned-value quarantine wrapper, not a trusted-input gate.
 Docs/site streamlining slice:
 
 - `git diff --check`: passed
-- `uv run ruff check src/pickle_stubs_secure tests docs`: passed
+- `uv run ruff check src/falcon_secure tests docs`: passed
 - `zsh -lc 'source ~/.zshrc && cd /home/debanjan/fun/falcon/docs && jekyll build'`: passed
   - Existing zsh/zoxide read-only noise remains.
   - Existing minima Sass deprecation warnings remain.
@@ -127,8 +127,7 @@ Likely next work:
   surfaces into wrapper stubs;
 - source-confirm the remaining route/file-only rows before claiming wrapper
   coverage;
-- preserve compatibility package and CLI names: `pickle-stubs-secure` and
-  `pickle-secure`.
+- launch package and CLI names are now `falcon-secure`.
 
 ## Important Caveats
 

@@ -1,8 +1,8 @@
-"""Test pickle-secure init --write-precommit."""
+"""Test falcon-secure init --write-precommit."""
 
 from pathlib import Path
 
-from pickle_stubs_secure.cli.init_cmd import init
+from falcon_secure.cli.init_cmd import init
 
 
 def test_init_precommit_creates_yaml(tmp_path: Path) -> None:
@@ -31,8 +31,8 @@ strict = true
     assert "repos:" in content
     assert "mypy" in content
     assert "ruff" in content
-    assert "pickle-secure-audit" in content
-    assert "pickle-secure audit" in content
+    assert "falcon-secure-audit" in content
+    assert "falcon-secure audit" in content
 
 
 def test_init_precommit_idempotent(tmp_path: Path) -> None:
@@ -92,4 +92,4 @@ typeCheckingMode = "basic"
     # Check pyright hook is present
     assert "pyright" in content
     assert "ruff" in content
-    assert "pickle-secure-audit" in content
+    assert "falcon-secure-audit" in content

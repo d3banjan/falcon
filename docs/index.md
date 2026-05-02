@@ -42,7 +42,7 @@ The triaged evidence set remains 26 rows:
 ```python
 from typing import Any, cast
 import pickle
-from pickle_stubs_secure.trust import trusted_bytes
+from falcon_secure.trust import trusted_bytes
 
 def blocked(raw: bytes) -> dict[str, Any]:
     return pickle.loads(raw)  # type error: raw bytes are not TrustedBytes
@@ -58,7 +58,7 @@ def reviewed(raw: bytes) -> dict[str, Any]:
 - returned-value quarantine in core and adjacent pickle-family sinks
 - selected call-time trusted-input boundaries for specific loader APIs
 - conditional unsafe-return checks for selected APIs such as NumPy pickle-backed loading
-- explicit trust boundaries captured by `pickle-secure audit`
+- explicit trust boundaries captured by `falcon-secure audit`
 
 ## What is not claimed
 

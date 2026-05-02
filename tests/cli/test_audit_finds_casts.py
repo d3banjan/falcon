@@ -1,9 +1,9 @@
-"""Test pickle-secure audit — finding cast-escape sites."""
+"""Test falcon-secure audit — finding cast-escape sites."""
 
 from pathlib import Path
 
 
-from pickle_stubs_secure.cli.audit_cmd import audit, audit_file, audit_trust_promotions_file
+from falcon_secure.cli.audit_cmd import audit, audit_file, audit_trust_promotions_file
 from tests.cli.fixtures import (
     CODE_WITH_CASTS,
     CODE_WITH_ALIASES,
@@ -55,8 +55,8 @@ def test_audit_file_lists_trust_promotion_aliases(tmp_path: Path) -> None:
     """audit_trust_promotions_file handles module and function aliases."""
     code = """\
 from pathlib import Path
-import pickle_stubs_secure.trust as trust
-from pickle_stubs_secure.trust import trusted_bytes as mark_bytes
+import falcon_secure.trust as trust
+from falcon_secure.trust import trusted_bytes as mark_bytes
 
 payload = mark_bytes(b"x", reason="fixture")
 path = trust.trusted_path(Path("model.pkl"), reason="fixture")
@@ -71,7 +71,7 @@ def test_audit_integration_finds_casts(tmp_path: Path) -> None:
     """Integration: audit() on directory should find all casts."""
     create_fixture_file(tmp_path, "test1.py", CODE_WITH_CASTS)
     create_fixture_file(tmp_path, "test2.py", CODE_WITH_ALIASES)
-    create_config_file(tmp_path, "[tool.pickle_secure]\nallow_tags = []\n")
+    create_config_file(tmp_path, "[tool.falcon_secure]\nallow_tags = []\n")
 
     result = audit(tmp_path, config_path=tmp_path / "pyproject.toml")
     # Should have violations but not crash
@@ -81,7 +81,7 @@ def test_audit_integration_finds_casts(tmp_path: Path) -> None:
 def test_audit_single_file(tmp_path: Path) -> None:
     """audit() should handle single file path."""
     fixture = create_fixture_file(tmp_path, "test.py", CODE_WITH_CASTS)
-    create_config_file(tmp_path, "[tool.pickle_secure]\nallow_tags = []\n")
+    create_config_file(tmp_path, "[tool.falcon_secure]\nallow_tags = []\n")
 
     result = audit(fixture, config_path=tmp_path / "pyproject.toml")
     assert result in (0, 1)

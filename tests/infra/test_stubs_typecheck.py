@@ -68,7 +68,7 @@ def test_loads_returns_unsafe(tmp_path: Path) -> None:
     code = textwrap.dedent("""\
         import pickle
         from _unsafe import Unsafe
-        from pickle_stubs_secure.trust import trusted_bytes
+        from falcon_secure.trust import trusted_bytes
         from typing import Any
 
         def deserialize(data: bytes) -> Unsafe[Any]:

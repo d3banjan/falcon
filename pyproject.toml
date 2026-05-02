@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "pickle-stubs-secure"
+name = "falcon-secure"
 version = "1.0.0a1"
 description = "Type-stub security gates for pickle-backed deserialization APIs"
 readme = "README.md"
@@ -55,15 +55,15 @@ dev = [
 ]
 
 [project.scripts]
-pickle-secure = "pickle_stubs_secure.cli.main:main"
+falcon-secure = "falcon_secure.cli.main:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/pickle_stubs_secure", "pickle-stubs", "stubs"]
+packages = ["src/falcon_secure", "falcon-stubs", "stubs"]
 
 [tool.hatch.build]
 include = [
-    "src/pickle_stubs_secure/**",
-    "pickle-stubs/**",
+    "src/falcon_secure/**",
+    "falcon-stubs/**",
     "stubs/**",
 ]
 

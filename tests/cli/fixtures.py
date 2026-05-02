@@ -66,7 +66,7 @@ w2 = cast(dict, pickle.loads(b"8"))
 
 # Config that requires reason on legacy-migration
 CONFIG_WITH_REASON_REQUIRED = """\
-[tool.pickle_secure]
+[tool.falcon_secure]
 allow_tags = ["general", "test-fixture"]
 deny_tags = ["legacy-migration"]
 require_reason = ["legacy-migration"]
@@ -75,7 +75,7 @@ unknown_tag = "error"
 
 # Config with unknown_tag = "warn"
 CONFIG_WITH_UNKNOWN_WARN = """\
-[tool.pickle_secure]
+[tool.falcon_secure]
 allow_tags = ["general", "test-fixture"]
 unknown_tag = "warn"
 """
@@ -89,7 +89,7 @@ def create_fixture_file(tmp_path: Path, name: str, content: str) -> Path:
 
 
 def create_config_file(tmp_path: Path, content: str) -> Path:
-    """Create a pyproject.toml with pickle_secure config."""
+    """Create a pyproject.toml with falcon_secure config."""
     config_path = tmp_path / "pyproject.toml"
     config_path.write_text(content)
     return config_path
