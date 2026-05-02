@@ -20,8 +20,11 @@ def test_ty_detects_cve_wrapper_stubs() -> None:
     assert CVE_FIXTURE.exists(), f"Fixture not found: {CVE_FIXTURE}"
     rc, output = ty_check(CVE_FIXTURE)
     assert rc != 0, f"Expected ty failure but got exit 0. Output:\n{output}"
-    assert output.count("error[invalid-assignment]") >= 34, (
+    assert output.count("error[invalid-assignment]") >= 32, (
         f"Expected broad Unsafe coverage in ty output but got:\n{output}"
+    )
+    assert output.count("error[invalid-argument-type]") >= 14, (
+        f"Expected trusted-input argument coverage in ty output but got:\n{output}"
     )
     assert "marshal_value" not in output, (
         "ty unexpectedly started honoring the marshal overlay; update coverage docs"

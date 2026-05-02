@@ -22,7 +22,7 @@ This is not a full count of all CPython CVEs; memory safety, audit-hook, subproc
 | Triaged evidence-set CVEs reviewed | 26 |
 | Covered at source-or-sink-family classification level | 24 / 26 (92%) |
 | Rows with sink-family or consumer-facing wrapper stubs | 16 / 26 (62%) |
-| Real APIs with trusted-input call preconditions | 9 |
+| Real APIs with trusted-input call preconditions | 16 |
 | Missing because sink family is not stubbed yet | 0 / 26 (0%) |
 | Out of scope for this method | 2 / 26 (8%) |
 | Additional OSV-promoted adjacent sink rows | 11 |
@@ -32,8 +32,9 @@ This is not a full count of all CPython CVEs; memory safety, audit-hook, subproc
 ### Call-time gate
 Strongest control: execution is blocked unless a trusted input is required before call.
 
-- **Current count:** 9 real APIs with call-time guards.
-- Examples: `pickle.loads`, `cloudpickle.load(s)`, `dill.load(s)`, `joblib.load`, pandas `read_pickle`, pandas `io.pickle.read_pickle`, and `torch.load`.
+- **Current count:** 16 selected real API entry points with call-time guards.
+- Core examples: `pickle.loads`, `cloudpickle.load(s)`, `dill.load(s)`, `joblib.load`, pandas `read_pickle`, pandas `io.pickle.read_pickle`, and `torch.load`.
+- Wrapper examples: LangChain FAISS byte/path loaders, Pipecat `LivekitFrameSerializer.deserialize`, and torch_musa compare utilities.
 
 ### Conditional unsafe return
 Direct call expressions whose unsafe mode can be represented in type stubs.
@@ -85,7 +86,7 @@ This candidate set is explicitly secondary context and a triage pipeline input, 
 |---|---|---|
 | Direct stdlib pickle source | Partly caught in typed source; limited call-time gates | `pickle.loads` now requires `TrustedBytes`; `pickle.load`, `_pickle`, and `shelve` reads provide returned-value quarantine. |
 | Conditional unsafe API | Implemented for NumPy | `numpy.load(..., allow_pickle=True)`. |
-| Public wrapper around pickle | Implemented for selected packages | LangChain FAISS, Kedro `ShelveStore`, LlamaIndex `JsonPickleSerializer`, pyfory, Pipecat, torch_musa, PyTorch, vLLM, InvokeAI, Horovod. |
+| Public wrapper around pickle | Implemented for selected packages; selected call-time gates | LangChain FAISS, Pipecat `LivekitFrameSerializer`, and torch_musa compare utilities now require trusted inputs; LlamaIndex `JsonPickleSerializer`, Kedro `ShelveStore`, pyfory, PyTorch, vLLM, InvokeAI, Horovod. |
 | Internal service deserialization | Partial | SocketIO queues, LeRobot gRPC, SGLang ZMQ, Tendenci reports. Falcon can catch source code or return flow, but not deployment trust. |
 | Alternate pickle-family libraries | Implemented at sink-family level with selected call gates | `cloudpickle.loads` requires `TrustedBytes`, `cloudpickle.load` requires `TrustedBinaryIO`, and `jsonpickle.decode` returns `Unsafe[Any]`. |
 | Adjacent Python serialization sinks | Implemented at sink-family or selected wrapper level | `joblib.load` and pandas `read_pickle` require `TrustedPath`; `dill.loads` requires `TrustedBytes`; `dill.load` requires `TrustedBinaryIO`; `marshal.load(s)`, skops `Card.get_model`, Embedchain `OpenAPILoader.load_data`, and unsafe YAML loaders return `Unsafe[Any]`. Most remaining wrappers still need trusted-input adoption before load-time prevention claims. |
@@ -96,15 +97,15 @@ This candidate set is explicitly secondary context and a triage pipeline input, 
 | CVE | Project | Sink family | Falcon verdict |
 |---|---|---|---|
 | CVE-2019-6446 | NumPy | `numpy.load(..., allow_pickle=True)` | Implemented target stub. |
-| CVE-2024-5998 | LangChain | FAISS pickle-backed deserialization | Implemented target stub. |
+| CVE-2024-5998 | LangChain | FAISS pickle-backed deserialization | Implemented target stub plus trusted-input gate. |
 | CVE-2024-9701 | Kedro | `shelve` wrapper | Implemented target stub. |
-| CVE-2025-3108 | LlamaIndex | `pickle.loads` fallback | Implemented target stub. |
+| CVE-2025-3108 | LlamaIndex | `pickle.loads` fallback | Implemented target stub; current public API is return-quarantine only. |
 | CVE-2025-32434 | PyTorch | `torch.load` | Implemented target stub; `torch.load` now requires `TrustedPath` and still returns `Unsafe[Any]`. |
 | CVE-2025-50472 | ModelScope / ms-swift | `pickle.load` | Validated source-shaped fixture; public API still needs confirmation. |
 | CVE-2025-61622 | pyfory / pyfury | pickle fallback | Implemented target stub. |
 | CVE-2025-61765 | python-socketio | queue pickle deserialization | Partial target stub; deployment trust remains out of type scope. |
-| CVE-2025-62373 | Pipecat | `pickle.loads` frame deserializer | Implemented target stub. |
-| CVE-2025-65213 | torch_musa | `pickle.load` utility path | Implemented target stub. |
+| CVE-2025-62373 | Pipecat | `pickle.loads` frame deserializer | Implemented target stub plus trusted-input gate. |
+| CVE-2025-65213 | torch_musa | `pickle.load` utility path | Implemented target stub plus trusted-input gate. |
 | CVE-2025-14931 | smolagents | pickle-backed parsing | Partial placeholder stub; exact API still needs source confirmation. |
 | CVE-2025-57622 | Step-Video-T2V | `pickle.loads` endpoint | Source catch only; no stable consumer API identified. |
 | CVE-2026-26215 | manga-image-translator | `pickle.loads` endpoint | Validated source-shaped fixture; auth/nonce behavior is out of scope. |

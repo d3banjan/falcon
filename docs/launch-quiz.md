@@ -17,20 +17,30 @@ This is a step-by-step validation you can run in a fresh project folder.
 strict = true
 ```
 
-3. Add this test module:
+3. Wire the installed stubs and audit policy:
+
+```bash
+pickle-secure init --profile=strict
+```
+
+4. Add this test module:
 
 ```python
 from typing import cast
 import pickle
 import numpy as np
+from pickle_stubs_secure.trust import trusted_bytes
 
 payload = b"..."
-unsafe = np.load("model.npy", allow_pickle=True)
-x = pickle.loads(payload)
-y = cast(dict, pickle.loads(payload))  # trust: launch-lab reason: inbound artifact boundary
+unsafe: dict[str, object] = np.load("model.npy", allow_pickle=True)
+x: dict[str, object] = pickle.loads(payload)
+reviewed_payload = trusted_bytes(payload, reason="launch lab artifact reviewed")
+reviewed_unsafe = pickle.loads(reviewed_payload)
+reviewed_value: dict[str, object] = reviewed_unsafe
+y = cast(dict[str, object], reviewed_unsafe)  # trust: launch-lab reason: inbound artifact boundary
 ```
 
-4. Run strict type-check:
+5. Run strict type-check:
 
 ```bash
 mypy --strict main.py
@@ -38,10 +48,12 @@ mypy --strict main.py
 
 Expected:
 
-- `pickle.loads(payload)` and `np.load(..., allow_pickle=True)` errors to `Unsafe[Any]`
-- `cast` line is accepted only if policy allows the `launch-lab` tag
+- `pickle.loads(payload)` errors because raw `bytes` are not `TrustedBytes`
+- `pickle.loads(reviewed_payload)` is accepted at the call because it uses `trusted_bytes(...)`
+- `reviewed_value` and `np.load(..., allow_pickle=True)` still produce `Unsafe[Any]`
+- `pickle-secure audit` accepts the `cast` line only if policy allows the `launch-lab` tag
 
-5. Add trust policy in a local `pyproject.toml`:
+6. Edit the generated `[tool.pickle_secure]` policy in `pyproject.toml` to contain:
 
 ```toml
 [tool.pickle_secure]
@@ -51,7 +63,7 @@ require_reason = ["launch-lab"]
 unknown_tag = "error"
 ```
 
-6. Run:
+7. Run:
 
 ```bash
 pickle-secure audit .
@@ -59,7 +71,7 @@ pickle-secure audit .
 
 Expected: no violations for `# trust: launch-lab ...` and one violation if you remove the tag.
 
-7. Repeat with `allow_pickle=False`:
+8. Repeat with `allow_pickle=False`:
 
 ```python
 data = np.load("model.npy", allow_pickle=False)
@@ -67,11 +79,11 @@ data = np.load("model.npy", allow_pickle=False)
 
 Expected: no numpy cast requirement from checker for default/pure-safe path (with current stub policy).
 
-8. Open a second module with `# trust: legacy-migration` and no reason text.
+9. Open a second module with `# trust: launch-lab` and no reason text.
 
 Expected: `pickle-secure audit .` reports missing-reason violation.
 
-9. Optional: run with a strict profile bootstrap.
+10. Optional: regenerate pre-commit wiring.
 
 ```bash
 pickle-secure init --profile=strict --write-precommit

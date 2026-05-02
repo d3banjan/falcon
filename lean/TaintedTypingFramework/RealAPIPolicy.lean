@@ -60,6 +60,48 @@ def torchPathLoaderSpec : ImportedLoaderSpec where
   returnTy := Ty.concrete "Checkpoint"
   loadTimeRisk := true
 
+def langchainCommunityFaissBytesLoaderSpec : ImportedLoaderSpec where
+  path := "langchain_community.vectorstores.faiss.FAISS.deserialize_from_bytes"
+  inputKind := InputKind.bytes
+  returnTy := Ty.concrete "Any"
+  loadTimeRisk := true
+
+def langchainCommunityFaissPathLoaderSpec : ImportedLoaderSpec where
+  path := "langchain_community.vectorstores.faiss.FAISS.load_local"
+  inputKind := InputKind.path
+  returnTy := Ty.concrete "FAISS"
+  loadTimeRisk := true
+
+def langchainLegacyFaissBytesLoaderSpec : ImportedLoaderSpec where
+  path := "langchain.vectorstores.faiss.FAISS.deserialize_from_bytes"
+  inputKind := InputKind.bytes
+  returnTy := Ty.concrete "Any"
+  loadTimeRisk := true
+
+def langchainLegacyFaissPathLoaderSpec : ImportedLoaderSpec where
+  path := "langchain.vectorstores.faiss.FAISS.load_local"
+  inputKind := InputKind.path
+  returnTy := Ty.concrete "FAISS"
+  loadTimeRisk := true
+
+def pipecatLivekitFrameDeserializeSpec : ImportedLoaderSpec where
+  path := "pipecat.serializers.livekit.LivekitFrameSerializer.deserialize"
+  inputKind := InputKind.bytes
+  returnTy := Ty.concrete "Frame"
+  loadTimeRisk := true
+
+def torchMusaCompareSingleOpSpec : ImportedLoaderSpec where
+  path := "torch_musa.utils.compare_tool.compare_for_single_op"
+  inputKind := InputKind.path
+  returnTy := Ty.concrete "Comparison"
+  loadTimeRisk := true
+
+def torchMusaNanInfTrackSingleOpSpec : ImportedLoaderSpec where
+  path := "torch_musa.utils.compare_tool.nan_inf_track_for_single_op"
+  inputKind := InputKind.path
+  returnTy := Ty.concrete "Comparison"
+  loadTimeRisk := true
+
 theorem no_raw_bytes_to_real_pickle_loads :
     ∀ Γ payload,
       ¬ ImportedDangerousCall Γ pickleLoadsBytesLoaderSpec
@@ -122,6 +164,55 @@ theorem no_raw_bytes_to_real_torch_load :
         (Expr.app torchPathLoaderSpec.expr (Expr.const (Value.vbytes payload))) TyUnsafeAny := by
   intro Γ payload
   exact raw_bytes_cannot_call_path_loader Γ torchPathLoaderSpec payload rfl
+
+theorem no_raw_bytes_to_langchain_community_faiss_deserialize :
+    ∀ Γ payload,
+      ¬ ImportedDangerousCall Γ langchainCommunityFaissBytesLoaderSpec
+        (Expr.app langchainCommunityFaissBytesLoaderSpec.expr (Expr.const (Value.vbytes payload))) TyUnsafeAny := by
+  intro Γ payload
+  exact raw_bytes_cannot_call_bytes_loader_without_promotion Γ langchainCommunityFaissBytesLoaderSpec payload rfl
+
+theorem no_raw_bytes_to_langchain_community_faiss_load_local :
+    ∀ Γ payload,
+      ¬ ImportedDangerousCall Γ langchainCommunityFaissPathLoaderSpec
+        (Expr.app langchainCommunityFaissPathLoaderSpec.expr (Expr.const (Value.vbytes payload))) TyUnsafeAny := by
+  intro Γ payload
+  exact raw_bytes_cannot_call_path_loader Γ langchainCommunityFaissPathLoaderSpec payload rfl
+
+theorem no_raw_bytes_to_langchain_legacy_faiss_deserialize :
+    ∀ Γ payload,
+      ¬ ImportedDangerousCall Γ langchainLegacyFaissBytesLoaderSpec
+        (Expr.app langchainLegacyFaissBytesLoaderSpec.expr (Expr.const (Value.vbytes payload))) TyUnsafeAny := by
+  intro Γ payload
+  exact raw_bytes_cannot_call_bytes_loader_without_promotion Γ langchainLegacyFaissBytesLoaderSpec payload rfl
+
+theorem no_raw_bytes_to_langchain_legacy_faiss_load_local :
+    ∀ Γ payload,
+      ¬ ImportedDangerousCall Γ langchainLegacyFaissPathLoaderSpec
+        (Expr.app langchainLegacyFaissPathLoaderSpec.expr (Expr.const (Value.vbytes payload))) TyUnsafeAny := by
+  intro Γ payload
+  exact raw_bytes_cannot_call_path_loader Γ langchainLegacyFaissPathLoaderSpec payload rfl
+
+theorem no_raw_bytes_to_pipecat_livekit_frame_deserialize :
+    ∀ Γ payload,
+      ¬ ImportedDangerousCall Γ pipecatLivekitFrameDeserializeSpec
+        (Expr.app pipecatLivekitFrameDeserializeSpec.expr (Expr.const (Value.vbytes payload))) TyUnsafeAny := by
+  intro Γ payload
+  exact raw_bytes_cannot_call_bytes_loader_without_promotion Γ pipecatLivekitFrameDeserializeSpec payload rfl
+
+theorem no_raw_bytes_to_torch_musa_compare_single_op :
+    ∀ Γ payload,
+      ¬ ImportedDangerousCall Γ torchMusaCompareSingleOpSpec
+        (Expr.app torchMusaCompareSingleOpSpec.expr (Expr.const (Value.vbytes payload))) TyUnsafeAny := by
+  intro Γ payload
+  exact raw_bytes_cannot_call_path_loader Γ torchMusaCompareSingleOpSpec payload rfl
+
+theorem no_raw_bytes_to_torch_musa_nan_inf_track_single_op :
+    ∀ Γ payload,
+      ¬ ImportedDangerousCall Γ torchMusaNanInfTrackSingleOpSpec
+        (Expr.app torchMusaNanInfTrackSingleOpSpec.expr (Expr.const (Value.vbytes payload))) TyUnsafeAny := by
+  intro Γ payload
+  exact raw_bytes_cannot_call_path_loader Γ torchMusaNanInfTrackSingleOpSpec payload rfl
 
 theorem promoted_bytes_can_call_real_pickle_loads :
     ∀ Γ payload (_evidence : PromotionEvidence),
@@ -212,6 +303,83 @@ theorem promoted_path_can_call_real_torch_load :
   exact promoted_input_can_call_imported_loader Γ (remoteArtifactPathExpr path) evidence
     (trustedPathExpr path) torchPathLoaderSpec promoted
 
+theorem promoted_bytes_can_call_langchain_community_faiss_deserialize :
+    ∀ Γ payload (_evidence : PromotionEvidence),
+      ImportedDangerousCall Γ langchainCommunityFaissBytesLoaderSpec
+        (Expr.app langchainCommunityFaissBytesLoaderSpec.expr (trustedBytesExpr payload)) TyUnsafeAny := by
+  intro Γ payload evidence
+  have promoted : PromotedInput Γ (networkBytesExpr payload) evidence
+      (trustedBytesExpr payload) TyTrustedBytes :=
+    PromotedInput.bytes Γ IngressSource.network payload evidence
+  exact promoted_input_can_call_imported_loader Γ (networkBytesExpr payload) evidence
+    (trustedBytesExpr payload) langchainCommunityFaissBytesLoaderSpec promoted
+
+theorem promoted_path_can_call_langchain_community_faiss_load_local :
+    ∀ Γ path (_evidence : PromotionEvidence),
+      ImportedDangerousCall Γ langchainCommunityFaissPathLoaderSpec
+        (Expr.app langchainCommunityFaissPathLoaderSpec.expr (trustedPathExpr path)) TyUnsafeAny := by
+  intro Γ path evidence
+  have promoted : PromotedInput Γ (remoteArtifactPathExpr path) evidence
+      (trustedPathExpr path) TyTrustedPath :=
+    PromotedInput.path Γ IngressSource.remoteArtifact path evidence
+  exact promoted_input_can_call_imported_loader Γ (remoteArtifactPathExpr path) evidence
+    (trustedPathExpr path) langchainCommunityFaissPathLoaderSpec promoted
+
+theorem promoted_bytes_can_call_langchain_legacy_faiss_deserialize :
+    ∀ Γ payload (_evidence : PromotionEvidence),
+      ImportedDangerousCall Γ langchainLegacyFaissBytesLoaderSpec
+        (Expr.app langchainLegacyFaissBytesLoaderSpec.expr (trustedBytesExpr payload)) TyUnsafeAny := by
+  intro Γ payload evidence
+  have promoted : PromotedInput Γ (networkBytesExpr payload) evidence
+      (trustedBytesExpr payload) TyTrustedBytes :=
+    PromotedInput.bytes Γ IngressSource.network payload evidence
+  exact promoted_input_can_call_imported_loader Γ (networkBytesExpr payload) evidence
+    (trustedBytesExpr payload) langchainLegacyFaissBytesLoaderSpec promoted
+
+theorem promoted_path_can_call_langchain_legacy_faiss_load_local :
+    ∀ Γ path (_evidence : PromotionEvidence),
+      ImportedDangerousCall Γ langchainLegacyFaissPathLoaderSpec
+        (Expr.app langchainLegacyFaissPathLoaderSpec.expr (trustedPathExpr path)) TyUnsafeAny := by
+  intro Γ path evidence
+  have promoted : PromotedInput Γ (remoteArtifactPathExpr path) evidence
+      (trustedPathExpr path) TyTrustedPath :=
+    PromotedInput.path Γ IngressSource.remoteArtifact path evidence
+  exact promoted_input_can_call_imported_loader Γ (remoteArtifactPathExpr path) evidence
+    (trustedPathExpr path) langchainLegacyFaissPathLoaderSpec promoted
+
+theorem promoted_bytes_can_call_pipecat_livekit_frame_deserialize :
+    ∀ Γ payload (_evidence : PromotionEvidence),
+      ImportedDangerousCall Γ pipecatLivekitFrameDeserializeSpec
+        (Expr.app pipecatLivekitFrameDeserializeSpec.expr (trustedBytesExpr payload)) TyUnsafeAny := by
+  intro Γ payload evidence
+  have promoted : PromotedInput Γ (networkBytesExpr payload) evidence
+      (trustedBytesExpr payload) TyTrustedBytes :=
+    PromotedInput.bytes Γ IngressSource.network payload evidence
+  exact promoted_input_can_call_imported_loader Γ (networkBytesExpr payload) evidence
+    (trustedBytesExpr payload) pipecatLivekitFrameDeserializeSpec promoted
+
+theorem promoted_path_can_call_torch_musa_compare_single_op :
+    ∀ Γ path (_evidence : PromotionEvidence),
+      ImportedDangerousCall Γ torchMusaCompareSingleOpSpec
+        (Expr.app torchMusaCompareSingleOpSpec.expr (trustedPathExpr path)) TyUnsafeAny := by
+  intro Γ path evidence
+  have promoted : PromotedInput Γ (remoteArtifactPathExpr path) evidence
+      (trustedPathExpr path) TyTrustedPath :=
+    PromotedInput.path Γ IngressSource.remoteArtifact path evidence
+  exact promoted_input_can_call_imported_loader Γ (remoteArtifactPathExpr path) evidence
+    (trustedPathExpr path) torchMusaCompareSingleOpSpec promoted
+
+theorem promoted_path_can_call_torch_musa_nan_inf_track_single_op :
+    ∀ Γ path (_evidence : PromotionEvidence),
+      ImportedDangerousCall Γ torchMusaNanInfTrackSingleOpSpec
+        (Expr.app torchMusaNanInfTrackSingleOpSpec.expr (trustedPathExpr path)) TyUnsafeAny := by
+  intro Γ path evidence
+  have promoted : PromotedInput Γ (remoteArtifactPathExpr path) evidence
+      (trustedPathExpr path) TyTrustedPath :=
+    PromotedInput.path Γ IngressSource.remoteArtifact path evidence
+  exact promoted_input_can_call_imported_loader Γ (remoteArtifactPathExpr path) evidence
+    (trustedPathExpr path) torchMusaNanInfTrackSingleOpSpec promoted
+
 theorem real_api_policy_preserves_unsafe_return :
     ∀ Γ spec arg τ,
       spec = pickleLoadsBytesLoaderSpec ∨
@@ -222,7 +390,14 @@ theorem real_api_policy_preserves_unsafe_return :
         spec = joblibPathLoaderSpec ∨
         spec = pandasReadPicklePathLoaderSpec ∨
         spec = pandasIOReadPicklePathLoaderSpec ∨
-        spec = torchPathLoaderSpec →
+        spec = torchPathLoaderSpec ∨
+        spec = langchainCommunityFaissBytesLoaderSpec ∨
+        spec = langchainCommunityFaissPathLoaderSpec ∨
+        spec = langchainLegacyFaissBytesLoaderSpec ∨
+        spec = langchainLegacyFaissPathLoaderSpec ∨
+        spec = pipecatLivekitFrameDeserializeSpec ∨
+        spec = torchMusaCompareSingleOpSpec ∨
+        spec = torchMusaNanInfTrackSingleOpSpec →
       ImportedDangerousCall Γ spec (Expr.app spec.expr arg) τ →
       τ = TyUnsafeAny := by
   intro Γ spec arg τ _ hcall

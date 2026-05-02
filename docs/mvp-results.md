@@ -23,7 +23,7 @@ The type-checker output is the proof artifact users can run in CI.
 Falcon currently covers 24 / 26 (92%) reviewed Python ecosystem pickle-backed
 CVE rows at the source-or-sink-family classification level. Of those, 16 / 26
 (62%) have implemented sink-family, consumer-facing package, or conditional API
-stubs. Nine real API entry points now have trusted-input call preconditions.
+stubs. Sixteen real API entry points now have trusted-input call preconditions.
 
 Current shipped scopes include:
 

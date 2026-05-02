@@ -23,6 +23,7 @@ Falcon enforces two gate classes today:
   - `cloudpickle.loads` and `dill.loads` require `TrustedBytes`
   - `cloudpickle.load` and `dill.load` require `TrustedBinaryIO`
   - `joblib.load`, `pandas.read_pickle`, `pandas.io.pickle.read_pickle`, and `torch.load` require `TrustedPath`
+  - selected FAISS, Pipecat, and torch_musa wrapper APIs require `TrustedBytes` or `TrustedPath`
 
 Falcon also models selected conditional unsafe APIs such as `numpy.load(..., allow_pickle=True)` as unsafe-return sources.
 

@@ -100,8 +100,8 @@ Expected output: build succeeds with `sorry`-declaration warnings only.
 | Trusted provenance promotion | ✅ Proved | `Provenance.lean` permits promoted inputs while preserving `Unsafe[Any]` returns |
 | Load-time risk classification | ✅ Proved | `LoadTime.lean` separates call-time risk from returned-value quarantine |
 | Wrapper forwarding evidence | ✅ Proved | `WrapperForwarding.lean` turns wrapper evidence into an imported-loader spec and `Unsafe[Any]` taint |
-| Real API trusted-input policy | ✅ Proved | `RealAPIPolicy.lean` connects enforced `pickle.loads`, `cloudpickle.load(s)`, `dill.load(s)`, `joblib.load`, pandas pickle helper, and `torch.load` stubs to the generic imported-loader model |
-| Replacement sound fragment | ✅ Proved | `SoundFragment.lean` rejects the counterexample shapes found in `Soundness.lean` |
+| Real API trusted-input policy | ✅ Proved | `RealAPIPolicy.lean` connects enforced `pickle.loads`, `cloudpickle.load(s)`, `dill.load(s)`, `joblib.load`, pandas pickle helper, `torch.load`, selected FAISS, Pipecat, and torch_musa stubs to the generic imported-loader model |
+| Replacement sound fragment | Conditional | Rejects the known higher-order counterexample shapes, but should not be cited as an unconditional proof until closure constants are excluded or recursively checked |
 
 ## Lean backlog
 

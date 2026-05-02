@@ -31,7 +31,6 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Topic :: Security",
     "Topic :: Software Development :: Quality Assurance",
-    "Typing :: Stubs Only",
 ]
 dependencies = [
     "tomlkit>=0.11.0",
@@ -68,7 +67,7 @@ include = [
     "stubs/**",
 ]
 
-# PEP 561: declare this is a stub-only package
+# Local checker configuration for the canonical stub overlay.
 [tool.mypy]
 python_version = "3.11"
 strict = true

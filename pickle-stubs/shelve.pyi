@@ -11,7 +11,7 @@ All other signatures preserved verbatim from typeshed.
 
 from _unsafe import Unsafe
 from collections.abc import ItemsView, KeysView, MutableMapping, ValuesView
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 
 _K = TypeVar("_K")
 _V = TypeVar("_V")

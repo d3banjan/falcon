@@ -63,6 +63,8 @@ Falcon enforces trusted-input preconditions on these real API entry points:
 - pandas `read_pickle` and `pandas.io.pickle.read_pickle` need `TrustedPath`
 - `joblib.load` needs `TrustedPath`
 - `torch.load` needs `TrustedPath`
+- selected FAISS, Pipecat, and torch_musa wrapper APIs need `TrustedBytes` or
+  `TrustedPath`
 
 ## Current coverage number
 
@@ -70,7 +72,7 @@ As of 2026-05-02, the triaged evidence set contains 26 Python ecosystem CVEs inv
 
 - Source-or-sink-family coverage: 24 / 26 (92%)
 - Sink-family or consumer-facing wrapper coverage: 16 / 26 (62%)
-- Real APIs with call-time trusted-input preconditions: 9
+- Real APIs with call-time trusted-input preconditions: 16
 - Out-of-scope for this method: 2 / 26 (8%)
 
 The OSV PyPI keyword sweep found 221 broad candidates on 2026-05-01. First-pass triage marks 31 as catchable, 37 as partial, 49 as needing source confirmation, with the rest non-denominator by duplicate/malicious-package/analyzer-policy/false-positive classification.

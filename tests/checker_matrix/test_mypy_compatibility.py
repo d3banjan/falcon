@@ -34,9 +34,11 @@ def test_mypy_detects_cve_wrapper_stubs() -> None:
     assert CVE_FIXTURE.exists(), f"Fixture not found: {CVE_FIXTURE}"
     rc, output = mypy_check(CVE_FIXTURE)
     assert rc != 0, f"Expected mypy failure but got exit 0. Output:\n{output}"
-    assert output.count("error:") >= 35 and output.count("Unsafe[") >= 35, (
+    assert output.count("error:") >= 45 and output.count("Unsafe[") >= 33, (
         f"Expected broad Unsafe[Any] coverage in mypy output but got:\n{output}"
     )
+    assert "expected \"TrustedBytes\"" in output
+    assert "expected \"TrustedPath\"" in output
 
 
 def test_mypy_detects_source_shaped_direct_pickle_cves() -> None:

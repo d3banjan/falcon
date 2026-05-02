@@ -11,25 +11,25 @@ This table lists every symbol mutated by Falcon stubs.
 | _pickle | load             | Unsafe[Any] | get_function_hook("_pickle.load")        |
 | _pickle | Unpickler.load   | Unsafe[Any] | get_method_hook("_pickle.Unpickler.load")|
 | numpy   | load             | Any or Unsafe[Any] | get_function_hook("numpy.load") (unsafe when allow_pickle=True) |
-| pandas | read_pickle | Unsafe[Any] | wrapper stub |
-| pandas.io.pickle | read_pickle | Unsafe[Any] | wrapper stub |
+| pandas | read_pickle | Unsafe[Any] from TrustedPath | wrapper stub |
+| pandas.io.pickle | read_pickle | Unsafe[Any] from TrustedPath | wrapper stub |
 | skops.card | Card.get_model | Unsafe[Any] | CVE-backed joblib wrapper stub |
-| langchain_community.vectorstores.faiss | FAISS.deserialize_from_bytes | Unsafe[Any] | CVE wrapper stub |
-| langchain_community.vectorstores.faiss | FAISS.load_local | Unsafe[Any] | CVE wrapper stub |
-| langchain.vectorstores.faiss | FAISS.deserialize_from_bytes | Unsafe[Any] | CVE wrapper stub |
-| langchain.vectorstores.faiss | FAISS.load_local | Unsafe[Any] | CVE wrapper stub |
+| langchain_community.vectorstores.faiss | FAISS.deserialize_from_bytes | Unsafe[Any] from TrustedBytes | CVE wrapper stub |
+| langchain_community.vectorstores.faiss | FAISS.load_local | Unsafe[Any] from TrustedPath | CVE wrapper stub |
+| langchain.vectorstores.faiss | FAISS.deserialize_from_bytes | Unsafe[Any] from TrustedBytes | CVE wrapper stub |
+| langchain.vectorstores.faiss | FAISS.load_local | Unsafe[Any] from TrustedPath | CVE wrapper stub |
 | kedro.io | ShelveStore reads | Unsafe[Any] | CVE wrapper stub |
-| llama_index.core | JsonPickleSerializer loads/deserializes | Unsafe[Any] | CVE wrapper stub |
+| llama_index.core.workflow | JsonPickleSerializer.deserialize | Unsafe[Any] | CVE wrapper stub |
 | pyfory | loads/deserialize/Fory methods | Unsafe[Any] | CVE wrapper stub |
 | socketio | queue manager handlers | Unsafe[Any] | CVE wrapper stub |
-| pipecat.serializers.livekit | LivekitFrameSerializer.deserialize | Unsafe[Any] | CVE wrapper stub |
-| torch_musa.utils.compare_tool | compare utilities | Unsafe[Any] | CVE wrapper stub |
-| torch | load | Unsafe[Any] | CVE wrapper stub |
-| cloudpickle | load | Unsafe[Any] | CVE sink-family stub |
-| cloudpickle | loads | Unsafe[Any] | CVE sink-family stub |
-| dill | load | Unsafe[Any] | serialization sink-family stub |
-| dill | loads | Unsafe[Any] | serialization sink-family stub |
-| joblib | load | Unsafe[Any] | serialization sink-family stub |
+| pipecat.serializers.livekit | LivekitFrameSerializer.deserialize | Unsafe[Any] from TrustedBytes | CVE wrapper stub |
+| torch_musa.utils.compare_tool | compare utilities | Unsafe[Any] from TrustedPath | CVE wrapper stub |
+| torch | load | Unsafe[Any] from TrustedPath | CVE wrapper stub |
+| cloudpickle | load | Unsafe[Any] from TrustedBinaryIO | CVE sink-family stub |
+| cloudpickle | loads | Unsafe[Any] from TrustedBytes | CVE sink-family stub |
+| dill | load | Unsafe[Any] from TrustedBinaryIO | serialization sink-family stub |
+| dill | loads | Unsafe[Any] from TrustedBytes | serialization sink-family stub |
+| joblib | load | Unsafe[Any] from TrustedPath | serialization sink-family stub |
 | jsonpickle | decode | Unsafe[Any] | CVE sink-family stub |
 | jsonpickle | loads | Unsafe[Any] | CVE sink-family stub |
 | marshal | load | Unsafe[Any] | serialization sink-family stub |

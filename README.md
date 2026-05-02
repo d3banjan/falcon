@@ -5,7 +5,7 @@
 
 Falcon turns pickle-backed deserialization risk into a type-checking gate.
 
-The project ships Python stubs that mark dangerous deserialization APIs as `Unsafe[Any]`. Selected real loaders also require explicit provenance wrappers such as `TrustedBytes` or `TrustedPath` before the call. Under strict `mypy` or `pyright`, application code cannot silently deserialize raw inputs or treat returned values as trusted data. Intentional trust must be written as `cast(...)` and can be enumerated by `pickle-secure audit`.
+The project ships Python stubs that mark dangerous deserialization APIs as `Unsafe[Any]`. Selected real loaders also require explicit provenance wrappers such as `TrustedBytes` or `TrustedPath` before the call. Under strict `mypy` or `pyright`, application code cannot silently treat deserialized values as trusted data, and selected call-time gates reject raw bytes, paths, and file handles before deserialization. Intentional trust must be written as `cast(...)` and can be enumerated by `pickle-secure audit`.
 
 Microsite: <https://d3banjan.github.io/falcon/>
 
@@ -51,7 +51,7 @@ CVE-backed downstream pilot surfaces:
 - `numpy.load(..., allow_pickle=True)`
 - LangChain / langchain-community FAISS deserialization
 - Kedro `ShelveStore` `__getitem__`, `get`, and `load`
-- LlamaIndex `JsonPickleSerializer` `deserialize`, `load`, and `loads`
+- LlamaIndex `JsonPickleSerializer.deserialize`
 - pyfory pickle fallback APIs
 - python-socketio queue manager emit/callback handlers
 - Pipecat LiveKit frame deserializer
@@ -75,6 +75,10 @@ See [cve_db/reports/osv-deserialization-candidates-2026-05-01.md](cve_db/reports
 pip install pickle-stubs-secure
 ```
 
+The installed distribution is `pickle-stubs-secure`; the runtime import path is
+`pickle_stubs_secure`, the CLI is `pickle-secure`, and local policy lives under
+`[tool.pickle_secure]`.
+
 For local development from this repo:
 
 ```bash
@@ -97,7 +101,7 @@ pickle-secure audit .
 
 - `src/pickle_stubs_secure/` - runtime package and CLI; this is Falcon's current compatibility import path.
 - `stubs/` - canonical checker overlay used by `mypy_path` / `stubPath`.
-- packaged stub distribution tree - wheel copy of the Falcon stubs; treat this as a packaging implementation detail.
+- `pickle-stubs/` - packaged stub distribution tree; treat this as a packaging implementation detail.
 - `cve_db/` - machine-readable CVE evidence and coverage reports.
 - `docs/` - GitHub Pages microsite source.
 - `lean/` - separate formal model work.
@@ -128,7 +132,7 @@ This is not a proof that Python, mypy, pyright, or every dependency is sound. It
 - CVE workflow: [docs/cve-database.md](docs/cve-database.md)
 - Launch quiz: [docs/launch-quiz.md](docs/launch-quiz.md)
 - Architecture: [docs/architecture.md](docs/architecture.md)
-- Current handoff: [docs/session-handoff-2026-05-01.md](docs/session-handoff-2026-05-01.md)
+- Current handoff: [docs/session-handoff-2026-05-02.md](docs/session-handoff-2026-05-02.md)
 
 ## License
 

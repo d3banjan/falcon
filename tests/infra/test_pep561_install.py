@@ -1,13 +1,11 @@
-"""Infra test: PEP 561 stub package shadows typeshed in fresh venv.
+"""Infra test: editable install plus repo stub overlay shadows typeshed.
 
 Creates a fresh venv, pip installs Falcon in editable mode,
 installs mypy, then runs mypy on a fixture importing pickle.loads and
 asserts Unsafe[Any] appears in the error output.
 
-This proves the stub package actually overrides stdlib stubs when installed.
-
-Note: Uses mypy_path mechanism (pyproject.toml sets stubs/ as mypy_path).
-The venv test verifies the full installation path.
+This exercises the installed CLI/runtime package plus the repo `stubs/` overlay
+configured by `mypy_path`; it is not a wheel-layout assertion by itself.
 """
 
 from __future__ import annotations
@@ -39,8 +37,8 @@ MYPY_CONFIG = textwrap.dedent("""\
 
 
 @pytest.mark.slow
-def test_pep561_stub_overrides_typeshed(tmp_path: Path) -> None:
-    """Fresh venv + pip install → mypy sees Unsafe[Any] on pickle.loads."""
+def test_editable_install_stub_overlay_overrides_typeshed(tmp_path: Path) -> None:
+    """Fresh venv + editable install + repo overlay sees Unsafe[Any]."""
     venv_dir = tmp_path / "test_venv"
     venv.create(str(venv_dir), with_pip=True)
 
